@@ -1,2 +1,2 @@
 # prism
-A minimal window manager written in Kotlin
+A minimal window manager written in [Kotlin](https://kotlinlang.org/)

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Prism
+Comment=A highly customizable, window manager written in Kotlin
+Exec=prism
+DesktopNames=Prism
+Type=Application
