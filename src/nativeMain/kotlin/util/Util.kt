@@ -48,5 +48,6 @@ fun Window.unsetCursor(dpy: Display, window: Window = this) {
     windowCursorInitialized.put(window, false)
 }
 // TODO: Does this work with window focus?
-// 
+// Should these be part of Window if they can be used on windows other than themselves?
+// Or should `window` be removed and replaced with `this`?
 // https://tronche.com/gui/x/xlib/window/XUndefineCursor.html
