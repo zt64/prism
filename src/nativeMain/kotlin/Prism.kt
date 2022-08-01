@@ -43,7 +43,7 @@ class Prism(
 
         while (true) {
             dpy.nextEvent(event.ptr)
-            root.setCursor(dpy, 58.toUInt()) // https://tronche.com/gui/x/xlib/appendix/b/
+            root.setCursor(dpy, 58u) // https://tronche.com/gui/x/xlib/appendix/b/
             // root.unsetCursor(dpy)         // your DE will replace these cursors with its own
             when (event.type) {              // TODO: When should we set the root window cursor? When should we unset it?
                 MapRequest -> event.xmaprequest.run {

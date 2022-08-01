@@ -34,7 +34,7 @@ fun Display.sendClientMessage(type: Atom, window: Window, propagate: Boolean = f
 fun Display.sendClientMessage(type: Atom, propagate: Boolean = false, eventMask: Long = NoEventMask, vararg data: Long) =
     sendClientMessage(type, rootWindow, propagate, eventMask, *data)
 
-fun Window.setCursor(dpy: Display, cur: UInt = 2.toUInt()) { 
+fun Window.setCursor(dpy: Display, cur: UInt = 2u) { 
     var cursorInitialized = windowCursorInitialized[this]
     if (cursorInitialized != true) {
         XDefineCursor(dpy.ptr, this, XCreateFontCursor(dpy.ptr, cur))
