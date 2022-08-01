@@ -6,7 +6,7 @@ import kotlin.system.exitProcess
 
 class Prism(
     private val config: Config,
-    private val dpy: Display,
+    private val dpy: Display
 ) {
     private val clients = mutableListOf<Client>()
     private var motionInfo: MotionInfo? = null
