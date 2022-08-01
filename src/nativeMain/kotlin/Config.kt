@@ -17,6 +17,7 @@ data class Header(
     val color: String = "#ffffff",
     val textColor: String = "#000000",
     val font: String = "DejaVu Sans Mono:size=12",
+    val fontSize: Long = 12,
     val height: Long = 30,
     val items: List<Item> = emptyList()
 )

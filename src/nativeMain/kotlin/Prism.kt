@@ -134,7 +134,7 @@ class Prism(
                                 } as CPointerVar<ByteVar>).value?.toKString() ?: fetchedName.value?.toKString() ?: "Unknown name"
 
                                 val draw = XftDrawCreate(dpy.ptr, header, attrs.visual, attrs.colormap)
-                                val font = XftFontOpenName(dpy.ptr, 0, config.header.font)
+                                val font = XftFontOpenName(dpy.ptr, 0, "${config.header.font}:size=${config.header.fontSize}")
                                 val color = alloc<XftColor> {
                                     XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.header.textColor, ptr)
                                 }
