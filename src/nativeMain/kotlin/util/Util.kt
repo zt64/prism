@@ -10,6 +10,8 @@ import xlib.*
 
 fun getConfigDir(): String? = getenv("XDG_CONFIG_HOME")?.toKString() ?: getenv("HOME")?.toKString()?.plus("/.config")
 fun Boolean.toInt(): Int = if (this) 1 else 0
+var windowCursors: MutableMap<Window, Cursor> = mutableMapOf()
+var windowCursorInitialized: MutableMap<Window, Boolean> = mutableMapOf()
 
 fun Display.sendClientMessage(type: Atom, window: Window, propagate: Boolean = false, eventMask: Long = NoEventMask, vararg data: Long) {
     memScoped {
@@ -32,3 +34,19 @@ fun Display.sendClientMessage(type: Atom, window: Window, propagate: Boolean = f
 
 fun Display.sendClientMessage(type: Atom, propagate: Boolean = false, eventMask: Long = NoEventMask, vararg data: Long) =
     sendClientMessage(type, rootWindow, propagate, eventMask, *data)
+
+fun Window.setCursor(dpy: Display, cur: UInt = 2.toUInt(), window: Window = this) { 
+    var cursorInitialized = windowCursorInitialized[window]
+    if (cursorInitialized != true) {
+        windowCursors.put(window, XCreateFontCursor(dpy.ptr, cur))
+        XDefineCursor(dpy.ptr, window, windowCursors[window]!!)
+        windowCursorInitialized.put(window, true)
+    }
+}
+fun Window.unsetCursor(dpy: Display, window: Window = this) {
+    XUndefineCursor(dpy.ptr, window)
+    windowCursorInitialized.put(window, false)
+}
+// TODO: Does this work with window focus?
+// 
+// https://tronche.com/gui/x/xlib/window/XUndefineCursor.html

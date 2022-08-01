@@ -6,7 +6,7 @@ import kotlin.system.exitProcess
 
 class Prism(
     private val config: Config,
-    private val dpy: Display
+    private val dpy: Display,
 ) {
     private val clients = mutableListOf<Client>()
     private var motionInfo: MotionInfo? = null
@@ -43,8 +43,9 @@ class Prism(
 
         while (true) {
             dpy.nextEvent(event.ptr)
-
-            when (event.type) {
+            root.setCursor(dpy, 58.toUInt()) // https://tronche.com/gui/x/xlib/appendix/b/
+            // root.unsetCursor(dpy)         // your DE will replace these cursors with its own
+            when (event.type) {              // TODO: When should we set the root window cursor? When should we unset it?
                 MapRequest -> event.xmaprequest.run {
                     memScoped {
                         val attrs = dpy.getWindowAttributes(window)
@@ -234,6 +235,7 @@ class Prism(
                     )
                 }
                 MotionNotify -> if (motionInfo != null) event.xmotion.run {
+
                     val client = clients.find { it.container == window || it.header == window } ?: return@run
 
                     while (XCheckTypedEvent(dpy.ptr, MotionNotify, event.ptr) == True) Unit
