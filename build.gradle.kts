@@ -15,7 +15,7 @@ kotlin {
 
         binaries {
             executable("prismc") {
-                entryPoint = "prismc"
+                entryPoint = "prismClient"
             }
         }
 
