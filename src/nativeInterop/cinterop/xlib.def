@@ -1,4 +1,4 @@
 headers = X11/Xlib.h X11/Xutil.h X11/xpm.h X11/Xft/Xft.h
 headerFilter = X11/**
-compilerOpts = -I/usr/include -I/usr/include/freetype2
-linkerOpts = -L/usr/lib/ -lX11 -lXft
+compilerOpts = -I/usr/include -I/usr/include/x86_64-linux-gnu -I/usr/include/freetype2
+linkerOpts = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lX11 -lXft
