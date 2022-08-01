@@ -9,7 +9,7 @@ data class Config(
 
 @Serializable
 data class General(
-    val autoStartPath: String = ".config/prism/autostart",
+    val autoStartPath: String = "~/.config/prism/autostart",
 )
 
 @Serializable
