@@ -43,8 +43,9 @@ class Prism(
 
         while (true) {
             dpy.nextEvent(event.ptr)
-
-            when (event.type) {
+            root.setCursor(dpy, 58u) // https://tronche.com/gui/x/xlib/appendix/b/
+            // root.unsetCursor(dpy)         // your DE will replace these cursors with its own
+            when (event.type) {              // TODO: When should we set the root window cursor? When should we unset it?
                 MapRequest -> event.xmaprequest.run {
                     memScoped {
                         val attrs = dpy.getWindowAttributes(window)
@@ -134,7 +135,7 @@ class Prism(
                                 } as CPointerVar<ByteVar>).value?.toKString() ?: fetchedName.value?.toKString() ?: "Unknown name"
 
                                 val draw = XftDrawCreate(dpy.ptr, header, attrs.visual, attrs.colormap)
-                                val font = XftFontOpenName(dpy.ptr, 0, config.header.font)
+                                val font = XftFontOpenName(dpy.ptr, 0, "${config.header.font}:size=${config.header.fontSize}")
                                 val color = alloc<XftColor> {
                                     XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.header.textColor, ptr)
                                 }
@@ -234,6 +235,7 @@ class Prism(
                     )
                 }
                 MotionNotify -> if (motionInfo != null) event.xmotion.run {
+
                     val client = clients.find { it.container == window || it.header == window } ?: return@run
 
                     while (XCheckTypedEvent(dpy.ptr, MotionNotify, event.ptr) == True) Unit
