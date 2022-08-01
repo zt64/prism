@@ -1,30 +1,42 @@
+
 import com.akuleshov7.ktoml.file.TomlFileReader
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.option
+import kotlinx.cinterop.pointed
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.serializer
 import platform.posix.R_OK
 import platform.posix.access
+import platform.posix.system
 import util.getConfigDir
 import xlib.XOpenDisplay
 
-fun main(args: Array<String>) = PrismWM().main(args)
+fun main(args: Array<String>): Unit = PrismWM().main(args)
 
 private class PrismWM : CliktCommand() {
     val configPath: String? by option(help = "Path to config file", envvar = "PRISM_CONFIG")
 
-    override fun run(): Unit = runBlocking {
+    override fun run() {
         val config = (configPath ?: getConfigDir()?.plus("/prism/config.toml"))?.run {
             if (access(this, R_OK) == 0) {
-                println("Found config file at $this")
+                echo("Found config file at $this")
                 TomlFileReader(ktomlConf).decodeFromFile<Config>(serializer(), this)
             } else {
-                println("No config file found, loading defaults")
+                echo("No config file found, loading defaults")
                 null
             }
         } ?: Config()
-        val dpy = XOpenDisplay(null) ?: error("Cannot open display")
+        val dpy = XOpenDisplay(null)?.pointed ?: return echo("Failed to open display", err = true)
 
-        Prism(config, dpy).startWM()
+        runBlocking {
+            launch {
+                system(config.general.autoStartPath)
+            }
+
+            launch {
+                Prism(config, dpy).startWM()
+            }
+        }
     }
 }

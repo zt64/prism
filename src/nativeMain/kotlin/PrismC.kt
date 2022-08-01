@@ -7,14 +7,14 @@ import kotlinx.coroutines.runBlocking
 import util.*
 import xlib.*
 
-private lateinit var dpy: CPointer<Display>
+private lateinit var dpy: Display
 
 @Suppress("Unused")
-fun prismClient(args: Array<String>) = PrismClient().subcommands(Exit(), Reload(), SR(), CloseClient()).main(args)
+fun prismClient(args: Array<String>): Unit = PrismClient().subcommands(Exit(), Reload(), SR(), CloseClient()).main(args)
 
 private class PrismClient : CliktCommand(name = "prismc") {
     init {
-        dpy = XOpenDisplay(null) ?: error("Cannot open display")
+        dpy = XOpenDisplay(null)?.pointed ?: error("Cannot open display")
     }
 
     override fun run() = Unit
@@ -27,7 +27,7 @@ private class Reload : CliktCommand(help = "Reload config") {
 private class SR : CliktCommand(help = "Send a client message") {
     private val num by argument("num", help = "The number to multiply by 2").int()
 
-    override fun run(): Unit = runBlocking {
+    override fun run() = runBlocking {
         memScoped {
             val visual = alloc<Visual>().ptr
             val attrs = alloc<XSetWindowAttributes> {
@@ -36,7 +36,7 @@ private class SR : CliktCommand(help = "Send a client message") {
 
             val dummyWindow = dpy.createWindow(dpy.rootWindow, 0, 0, 1, 1, 0, 0, InputOutput, visual, 0L, attrs)
 
-            XSelectInput(dpy, dummyWindow, SubstructureNotifyMask)
+            XSelectInput(dpy.ptr, dummyWindow, SubstructureNotifyMask)
 
             alloc<XEvent> {
                 xclient.apply {
@@ -46,7 +46,7 @@ private class SR : CliktCommand(help = "Send a client message") {
                     serial = 0u
                     format = 32
                     send_event = True
-                    display = dpy
+                    display = dpy.ptr
                 }
 
                 dpy.sendEvent(dpy.rootWindow, false, SubstructureNotifyMask, ptr)
@@ -73,7 +73,7 @@ private class Exit : CliktCommand(help = "Exit prism") {
 }
 
 private class CloseClient : CliktCommand(help = "Close a client") {
-    val clientId: Int by argument(name = "id", help = "The id of the client to close").int()
+    val clientId by argument(name = "id", help = "The id of the client to close").int()
 
     override fun run() = dpy.sendClientMessage(Atom.IPC_CLOSE_CLIENT, false, SubstructureNotifyMask, clientId.toLong())
 }

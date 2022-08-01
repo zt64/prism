@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version "1.6.0"
-    kotlin("plugin.serialization") version "1.5.31"
+    kotlin("multiplatform") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
 }
 
 repositories {
@@ -8,31 +8,37 @@ repositories {
 }
 
 kotlin {
-    val nativeTarget = if (System.getProperty("os.name") == "Linux") linuxX64("native")
-    else throw GradleException("Host OS is not supported in Kotlin/Native.")
-
-    nativeTarget.apply {
+    linuxX64("native") {
         binaries {
-            executable("prism") {
-                entryPoint = "main"
-            }
+            executable("prism")
+        }
+
+        binaries {
             executable("prismc") {
-                entryPoint = "prismClient"
+                entryPoint = "prismc"
             }
         }
 
-        val xlib by compilations.getByName("main").cinterops.creating
+        compilations.getByName("main") {
+            val xlib by cinterops.creating
+
+            kotlinOptions {
+                freeCompilerArgs = freeCompilerArgs + "-Xpurge-user-libs"
+            }
+        }
     }
 
     sourceSets {
         val nativeMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-linuxx64:1.6.0-RC")
-                implementation("com.akuleshov7:ktoml-core:0.2.8")
-                implementation("com.akuleshov7:ktoml-file:0.2.8")
-                implementation("com.github.ajalt.clikt:clikt-linuxx64:3.3.0")
+                val ktomlVersion = "0.2.13"
+
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-linuxx64:1.6.4")
+                implementation("com.akuleshov7:ktoml-core:$ktomlVersion")
+                implementation("com.akuleshov7:ktoml-file:$ktomlVersion")
+                implementation("com.github.ajalt.clikt:clikt-linuxx64:3.5.0")
+                implementation("io.insert-koin:koin-core:3.2.0")
             }
         }
-        val nativeTest by getting
     }
 }

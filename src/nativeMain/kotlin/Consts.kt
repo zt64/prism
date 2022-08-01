@@ -1,12 +1,9 @@
-import com.akuleshov7.ktoml.KtomlConf
+import com.akuleshov7.ktoml.TomlInputConfig
 
-val ktomlConf = KtomlConf(
-    // allow/prohibit unknown names during the deserialization, default false
-    ignoreUnknownNames = false,
-    // allow/prohibit empty values like "a = # comment", default true
-    emptyValuesAllowed = true,
-    // allow/prohibit escaping of single quotes in literal strings, default true
-    escapedQuotesInLiteralStringsAllowed = true
+val ktomlConf = TomlInputConfig(
+    ignoreUnknownNames = true,
+    allowEmptyValues = true,
+    allowEscapedQuotesInLiteralStrings = true,
 )
 
 val CurrentTime get() = xlib.CurrentTime.toULong()

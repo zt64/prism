@@ -4,13 +4,14 @@ import None
 import kotlinx.cinterop.*
 import xlib.*
 
-fun CPointer<Display>.reparentWindow(window: Window, parent: Window, x: Int, y: Int) = XReparentWindow(this, window, parent, x, y)
-fun CPointer<Display>.mapWindow(window: Window) = XMapWindow(this, window)
-fun CPointer<Display>.mapWindows(vararg windows: Window) = windows.forEach { XMapWindow(this, it) }
-fun CPointer<Display>.unmapWindow(window: Window) = XUnmapWindow(this, window)
-fun CPointer<Display>.clearWindow(window: Window) = XClearWindow(this, window)
-fun CPointer<Display>.selectInput(window: Window, mask: Long) = XSelectInput(this, window, mask)
-fun CPointer<Display>.createWindow(
+fun Display.reparentWindow(window: Window, parent: Window, x: Int, y: Int) = XReparentWindow(ptr, window, parent, x, y)
+fun Display.mapWindow(window: Window) = XMapWindow(ptr, window)
+@OptIn(ExperimentalUnsignedTypes::class)
+fun Display.mapWindows(vararg windows: Window) = windows.forEach(::mapWindow)
+fun Display.unmapWindow(window: Window) = XUnmapWindow(ptr, window)
+fun Display.clearWindow(window: Window) = XClearWindow(ptr, window)
+fun Display.selectInput(window: Window, mask: Long) = XSelectInput(ptr, window, mask)
+fun Display.createWindow(
     parent: Window,
     x: Int,
     y: Int,
@@ -23,10 +24,10 @@ fun CPointer<Display>.createWindow(
     valueMask: Long,
     attributesPtr: CValuesRef<XSetWindowAttributes>?
 ) = XCreateWindow(
-    this, parent, x, y, width.toUInt(), height.toUInt(), borderWidth.toUInt(), depth, clazz.toUInt(), visual, valueMask.toULong(), attributesPtr
+    ptr, parent, x, y, width.toUInt(), height.toUInt(), borderWidth.toUInt(), depth, clazz.toUInt(), visual, valueMask.toULong(), attributesPtr
 )
 
-fun CPointer<Display>.grabButton(
+fun Display.grabButton(
     button: UInt,
     modifiers: Int,
     grabWindow: Window,
@@ -37,10 +38,10 @@ fun CPointer<Display>.grabButton(
     confineTo: Window? = null,
     cursor: Cursor? = null,
 ) = XGrabButton(
-    this, button, modifiers.toUInt(), grabWindow, ownerEvents, eventMask.toUInt(), pointerMode, keyboardMode, confineTo ?: None, cursor ?: None
+    ptr, button, modifiers.toUInt(), grabWindow, ownerEvents, eventMask.toUInt(), pointerMode, keyboardMode, confineTo ?: None, cursor ?: None
 )
 
-fun CPointer<Display>.getWindowProperty(
+fun Display.getWindowProperty(
     window: Window,
     property: Atom,
     longOffset: Long,
@@ -53,26 +54,29 @@ fun CPointer<Display>.getWindowProperty(
     bytesAfter: CPointer<ULongVar>?,
     prop:  CValuesRef<CPointerVar<UByteVar>>?
 ) = XGetWindowProperty(
-    this, window, property, longOffset, longLength, delete.toInt(), reqType, actualType, actualFormat, nitems, bytesAfter, prop
+    ptr, window, property, longOffset, longLength, delete.toInt(), reqType, actualType, actualFormat, nitems, bytesAfter, prop
 )
 
-fun CPointer<Display>.getWindowAttributes(window: Window, pointer: CValuesRef<XWindowAttributes>?) = XGetWindowAttributes(this, window, pointer)
-fun CPointer<Display>.setWindowBackground(window: Window, pixel: ULong) = XSetWindowBackground(this, window, pixel)
-fun CPointer<Display>.raiseWindow(window: Window) = XRaiseWindow(this, window)
-fun CPointer<Display>.sendEvent(
+fun Display.getWindowAttributes(window: Window): XWindowAttributes {
+    return nativeHeap.alloc<XWindowAttributes> {
+        XGetWindowAttributes(this@getWindowAttributes.ptr, window, ptr)
+    }
+}
+fun Display.setWindowBackground(window: Window, pixel: ULong) = XSetWindowBackground(ptr, window, pixel)
+fun Display.raiseWindow(window: Window) = XRaiseWindow(ptr, window)
+fun Display.sendEvent(
     window: Window,
     propagate: Boolean,
     eventMask: Long,
     eventPtr: CValuesRef<XEvent>?
-) = XSendEvent(this, window, propagate.toInt(), eventMask, eventPtr)
-fun CPointer<Display>.nextEvent(eventPtr: CValuesRef<XEvent>?) = XNextEvent(this, eventPtr)
+) = XSendEvent(ptr, window, propagate.toInt(), eventMask, eventPtr)
+fun Display.nextEvent(eventPtr: CValuesRef<XEvent>?) = XNextEvent(ptr, eventPtr)
 
-fun CPointer<Display>.flush() = XFlush(this)
-fun CPointer<Display>.sync(discard: Boolean) = XSync(this, discard.toInt())
-fun CPointer<Display>.internAtom(name: String, onlyIfExists: Boolean = false) = XInternAtom(this, name, onlyIfExists.toInt())
+fun Display.flush() = XFlush(ptr)
+fun Display.sync(discard: Boolean) = XSync(ptr, discard.toInt())
+fun Display.internAtom(name: String, onlyIfExists: Boolean = false) = XInternAtom(ptr, name, onlyIfExists.toInt())
 
-val CPointer<Display>.rootWindow
-    get() = XDefaultRootWindow(this)
+val Display.rootWindow get() = XDefaultRootWindow(ptr)
 
 var anonymousStruct2.bytes
     get() = listOf(b[0], b[1], b[2], b[3], b[4])
