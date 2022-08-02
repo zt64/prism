@@ -29,36 +29,46 @@ private class SR : CliktCommand(help = "Send a client message") {
 
     override fun run() = runBlocking {
         memScoped {
-            val visual = alloc<Visual>().ptr
-            val attrs = alloc<XSetWindowAttributes> {
-                override_redirect = True
-            }.ptr
+            val dummyWindow = dpy.createWindow(
+                width = 1,
+                height = 1,
+                borderWidth = 0,
+                depth = 0,
+                clazz = InputOutput,
+                visual = alloc(),
+                valueMask = 0L,
+                attributes = alloc<XSetWindowAttributes> {
+                    override_redirect = True
+                }
+            )
 
-            val dummyWindow = dpy.createWindow(dpy.rootWindow, 0, 0, 1, 1, 0, 0, InputOutput, visual, 0L, attrs)
+            dpy.selectInput(dummyWindow, SubstructureNotifyMask)
 
-            XSelectInput(dpy.ptr, dummyWindow, SubstructureNotifyMask)
-
-            alloc<XEvent> {
-                xclient.apply {
-                    type = ClientMessage
-                    window = dummyWindow
-                    data.longs = listOf(Atom.IPC_LIST_CLIENTS_REQUEST.ordinal.toLong(), num.toLong())
-                    serial = 0u
-                    format = 32
-                    send_event = True
-                    display = dpy.ptr
+            memScoped {
+                val event = alloc<XEvent> {
+                    xclient.apply {
+                        type = ClientMessage
+                        window = dummyWindow
+                        data.longs = listOf(Atom.IPC_LIST_CLIENTS_REQUEST.ordinal.toLong(), num.toLong())
+                        serial = 0u
+                        format = 32
+                        send_event = True
+                        display = dpy.ptr
+                    }
                 }
 
-                dpy.sendEvent(dpy.rootWindow, false, SubstructureNotifyMask, ptr)
+                dpy.sendEvent(dpy.rootWindow, false, SubstructureNotifyMask, event)
+                dpy.flush()
             }
 
-            dpy.flush()
+            memScoped {
+                val event = alloc<XEvent>()
 
-            val event = alloc<XEvent>()
-            while (dpy.nextEvent(event.ptr) == Success) {
-                if (event.type == ClientMessage && event.xclient.data.l[0] == Atom.IPC_LIST_CLIENTS_RESPONSE.ordinal.toLong()) {
-                    println(event.xclient.data.l[1])
-                    break
+                while (dpy.nextEvent(event) == Success) {
+                    if (event.type == ClientMessage && event.xclient.data.l[0] == Atom.IPC_LIST_CLIENTS_RESPONSE.ordinal.toLong()) {
+                        println(event.xclient.data.l[1])
+                        break
+                    }
                 }
             }
         }
@@ -68,6 +78,7 @@ private class SR : CliktCommand(help = "Send a client message") {
 private class Exit : CliktCommand(help = "Exit prism") {
     override fun run() {
         println("Exiting...")
+
         dpy.sendClientMessage(Atom.IPC_EXIT, false, SubstructureNotifyMask)
     }
 }

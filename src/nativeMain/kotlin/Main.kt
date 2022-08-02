@@ -1,4 +1,5 @@
 
+import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.file.TomlFileReader
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.option
@@ -18,6 +19,12 @@ private class PrismWM : CliktCommand() {
     val configPath: String? by option(help = "Path to config file", envvar = "PRISM_CONFIG")
 
     override fun run() {
+        val ktomlConf = TomlInputConfig(
+            ignoreUnknownNames = true,
+            allowEmptyValues = true,
+            allowEscapedQuotesInLiteralStrings = true,
+        )
+
         val config = (configPath ?: getConfigDir()?.plus("/prism/config.toml"))?.run {
             if (access(this, R_OK) == 0) {
                 echo("Found config file at $this")

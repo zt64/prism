@@ -8,13 +8,21 @@ import kotlinx.cinterop.toKString
 import platform.posix.getenv
 import xlib.*
 
-fun getConfigDir(): String? = getenv("XDG_CONFIG_HOME")?.toKString() ?: getenv("HOME")?.toKString()?.plus("/.config")
-fun Boolean.toInt(): Int = if (this) 1 else 0
-var windowCursorInitialized: MutableMap<Window, Boolean> = mutableMapOf()
+val CurrentTime get() = xlib.CurrentTime.toULong()
+val None = xlib.None.toULong()
 
-fun Display.sendClientMessage(type: Atom, window: Window, propagate: Boolean = false, eventMask: Long = NoEventMask, vararg data: Long) {
+fun getConfigDir() = getenv("XDG_CONFIG_HOME")?.toKString() ?: getenv("HOME")?.toKString()?.plus("/.config")
+fun Boolean.toInt() = if (this) True else False
+
+fun Display.sendClientMessage(
+    type: Atom,
+    window: Window = rootWindow,
+    propagate: Boolean = false,
+    eventMask: Long = NoEventMask,
+    vararg data: Long
+) {
     memScoped {
-        alloc<XEvent> {
+        val event = alloc<XEvent> {
             xclient.apply {
                 this.type = ClientMessage
                 this.data.longs = listOf(type.ordinal.toLong(), *data.toTypedArray())
@@ -23,27 +31,17 @@ fun Display.sendClientMessage(type: Atom, window: Window, propagate: Boolean = f
                 send_event = True
                 display = this@sendClientMessage.ptr
             }
-
-            sendEvent(window, propagate, eventMask, ptr)
         }
 
-        flush()
+        sendEvent(window, propagate, eventMask, event)
     }
+
+    flush()
 }
 
-fun Display.sendClientMessage(type: Atom, propagate: Boolean = false, eventMask: Long = NoEventMask, vararg data: Long) =
-    sendClientMessage(type, rootWindow, propagate, eventMask, *data)
-
-fun Window.setCursor(dpy: Display, cur: UInt = 2u) { 
-    var cursorInitialized = windowCursorInitialized[this]
-    if (cursorInitialized != true) {
-        XDefineCursor(dpy.ptr, this, XCreateFontCursor(dpy.ptr, cur))
-        windowCursorInitialized.put(this, true)
-    }
-}
-fun Window.unsetCursor(dpy: Display) {
-    XUndefineCursor(dpy.ptr, this)
-    windowCursorInitialized.put(this, false)
-}
-// TODO: Does this work with window focus?
-// https://tronche.com/gui/x/xlib/window/XUndefineCursor.html
+fun Display.sendClientMessage(
+    type: Atom,
+    propagate: Boolean = false,
+    eventMask: Long = NoEventMask,
+    vararg data: Long
+) = sendClientMessage(type, rootWindow, propagate, eventMask, *data)

@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.10"
+    kotlin("multiplatform") version "1.7.20-Beta"
+    kotlin("plugin.serialization") version "1.7.20-Beta"
 }
 
 repositories {
@@ -9,21 +9,15 @@ repositories {
 
 kotlin {
     linuxX64("native") {
-        binaries {
-            executable("prism")
-        }
-
-        binaries {
-            executable("prismc") {
-                entryPoint = "prismClient"
-            }
-        }
-
         compilations.getByName("main") {
             val xlib by cinterops.creating
+        }
 
-            kotlinOptions {
-                freeCompilerArgs = freeCompilerArgs + "-Xpurge-user-libs"
+        binaries {
+            executable("prism")
+
+            executable("prismc") {
+                entryPoint = "prismClient"
             }
         }
     }
