@@ -28,8 +28,6 @@ class Prism(
         while (true) {
             dpy.nextEvent(event)
 
-            println("Received new event: ${event.type}")
-
             when (event.type) {
                 MapRequest -> event.xmaprequest.run {
                     memScoped {
@@ -166,7 +164,9 @@ class Prism(
                     if (subwindow != None) dpy.raiseWindow(subwindow)
                 }
                 ButtonPress -> event.xbutton.run {
-                    val client = clients.find { it.container == subwindow || it.header == subwindow } ?: return@run
+                    dpy.raiseWindow(subwindow)
+
+                    val client = clients.find { client -> client.container == subwindow || client.header == subwindow } ?: return@run
 
                     dpy.grabPointer(
                         grabWindow = client.container,
@@ -190,7 +190,7 @@ class Prism(
                 MotionNotify -> if (motionInfo != null) event.xmotion.run {
                     val client = clients.find { it.container == window || it.header == window } ?: return@run
 
-                    while (XCheckTypedEvent(dpy.ptr, MotionNotify, event.ptr) == True) Unit
+                    while (dpy.checkTypedEvent(MotionNotify, event.ptr)) Unit
 
                     val start = motionInfo!!.start
                     val attrs = motionInfo!!.attrs

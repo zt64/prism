@@ -144,7 +144,9 @@ fun Display.sendEvent(
     event: XEvent?
 ) = XSendEvent(ptr, window, propagate.toInt(), eventMask, event?.ptr)
 
+fun Display.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?) = XCheckTypedEvent(ptr, eventType, eventReturn) == True
 fun Display.nextEvent(event: XEvent?) = XNextEvent(ptr, event?.ptr)
+
 
 fun Display.flush() = XFlush(ptr)
 fun Display.sync(discard: Boolean) = XSync(ptr, discard.toInt())
