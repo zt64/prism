@@ -17,7 +17,7 @@ var anonymousStruct2.longs
     get() = listOf(l[0], l[1], l[2], l[3], l[4])
     set(v) = v.forEachIndexed { index, long -> l[index] = long }
 
-fun Display.reparentWindow(window: Window, parent: Window, x: Int, y: Int) = XReparentWindow(ptr, window, parent, x, y)
+fun Display.reparentWindow(window: Window, parent: Window, x: Int = 0, y: Int = 0) = XReparentWindow(ptr, window, parent, x, y)
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun Display.mapWindows(vararg windows: Window) = windows.forEach(::mapWindow)
@@ -146,7 +146,6 @@ fun Display.sendEvent(
 
 fun Display.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?) = XCheckTypedEvent(ptr, eventType, eventReturn) == True
 fun Display.nextEvent(event: XEvent?) = XNextEvent(ptr, event?.ptr)
-
 
 fun Display.flush() = XFlush(ptr)
 fun Display.sync(discard: Boolean) = XSync(ptr, discard.toInt())
