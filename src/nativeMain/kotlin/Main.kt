@@ -22,18 +22,21 @@ private class PrismWM : CliktCommand() {
         val ktomlConf = TomlInputConfig(
             ignoreUnknownNames = true,
             allowEmptyValues = true,
-            allowEscapedQuotesInLiteralStrings = true,
+            allowEscapedQuotesInLiteralStrings = true
         )
 
-        val config = (configPath ?: getConfigDir()?.plus("/prism/config.toml"))?.run {
-            if (access(this, R_OK) == 0) {
-                echo("Found config file at $this")
-                TomlFileReader(ktomlConf).decodeFromFile<Config>(serializer(), this)
-            } else {
-                echo("No config file found, loading defaults")
-                null
-            }
-        } ?: Config()
+        val path = (configPath ?: getConfigDir()?.plus("/prism/config.toml"))?.takeIf {
+            access(it, R_OK) == 0
+        }
+
+        val config = if (path != null) {
+            echo("Found config file at $path")
+            TomlFileReader(ktomlConf).decodeFromFile(serializer(), path)
+        } else {
+            echo("No config file found, loading defaults")
+            Config()
+        }
+
         val dpy = XOpenDisplay(null)?.pointed ?: return echo("Failed to open display", err = true)
 
         runBlocking {
