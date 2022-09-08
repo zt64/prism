@@ -144,6 +144,10 @@ class Prism(
                     clients.remove(client)
                 }
                 ConfigureRequest -> event.xconfigurerequest.let { ev ->
+                    if (ev.window == dpy.rootWindow) return@let // ignore root window config requests
+
+                    print("Handling configure request event")
+
                     memScoped {
                         dpy.configureWindow(
                             window = ev.window,
