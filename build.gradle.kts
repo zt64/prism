@@ -25,7 +25,7 @@ kotlin {
     sourceSets {
         val nativeMain by getting {
             dependencies {
-                val ktomlVersion = "0.2.13"
+                val ktomlVersion = "0.5.0"
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-linuxx64:1.7.2")
                 implementation("com.akuleshov7:ktoml-core:$ktomlVersion")
