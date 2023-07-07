@@ -31,7 +31,7 @@ kotlin {
                 implementation("com.akuleshov7:ktoml-core:$ktomlVersion")
                 implementation("com.akuleshov7:ktoml-file:$ktomlVersion")
                 implementation("com.github.ajalt.clikt:clikt-linuxx64:3.5.4")
-                implementation("io.insert-koin:koin-core:3.2.0")
+                implementation("io.insert-koin:koin-core:3.4.2")
             }
         }
     }
