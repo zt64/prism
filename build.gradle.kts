@@ -1,5 +1,6 @@
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import org.jlleitschuh.gradle.ktlint.tasks.GenerateReportsTask
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -13,12 +14,16 @@ subprojects {
     }
 
     configure<KtlintExtension> {
-        outputToConsole.set(true)
-        outputToConsole = true
+        version = "0.49.1"
 
         reporters {
             reporter(ReporterType.SARIF)
-            reporter(ReporterType.CHECKSTYLE)
         }
+    }
+
+    tasks.withType<GenerateReportsTask> {
+        reportsOutputDirectory.set(
+            buildDir.resolve("reports/ktlint/$name")
+        )
     }
 }

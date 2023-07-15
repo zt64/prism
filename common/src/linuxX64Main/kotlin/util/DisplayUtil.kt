@@ -19,7 +19,8 @@ var anonymousStruct2.longs
     get() = listOf(l[0], l[1], l[2], l[3], l[4])
     set(v) = v.forEachIndexed { index, long -> l[index] = long }
 
-fun Display.reparentWindow(window: Window, parent: Window, x: Int = 0, y: Int = 0) = XReparentWindow(ptr, window, parent, x, y)
+fun Display.reparentWindow(window: Window, parent: Window, x: Int = 0, y: Int = 0) =
+    XReparentWindow(ptr, window, parent, x, y)
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun Display.mapWindows(vararg windows: Window) = windows.forEach(::mapWindow)
@@ -94,7 +95,16 @@ fun Display.grabButton(
     confineTo: Window? = null,
     cursor: Cursor? = null
 ) = XGrabButton(
-    ptr, button, modifiers.toUInt(), grabWindow, ownerEvents.toInt(), eventMask.toUInt(), pointerMode, keyboardMode, confineTo ?: NONE, cursor ?: NONE
+    ptr,
+    button,
+    modifiers.toUInt(),
+    grabWindow,
+    ownerEvents.toInt(),
+    eventMask.toUInt(),
+    pointerMode,
+    keyboardMode,
+    confineTo ?: NONE,
+    cursor ?: NONE
 )
 
 /**
@@ -118,7 +128,18 @@ fun Display.grabPointer(
     confineTo: Window = NONE,
     cursor: Cursor = NONE,
     time: Time = CURRENT_TIME
-) = XGrabPointer(ptr, grabWindow, ownerEvents.toInt(), eventMask.toUInt(), pointerMode, keyboardMode, confineTo, cursor, time)
+) = XGrabPointer(
+    ptr,
+    grabWindow,
+    ownerEvents.toInt(),
+    eventMask.toUInt(),
+    pointerMode,
+    keyboardMode,
+    confineTo,
+    cursor,
+    time
+)
+
 fun Display.unGrabPointer(time: Time = CURRENT_TIME) = XUngrabPointer(ptr, time)
 
 /**
@@ -172,6 +193,7 @@ fun Display.setInputFocus(
 fun Display.getWindowAttributes(window: Window) = nativeHeap.alloc<XWindowAttributes> {
     getWindowAttributes(window, ptr)
 }
+
 fun Display.getWindowAttributes(
     window: Window,
     windowsAttributeReturn: CValuesRef<XWindowAttributes>?
@@ -184,7 +206,8 @@ fun Display.raiseWindows(vararg window: Window) = window.forEach(::raiseWindow)
 fun Display.raiseWindow(window: Window) = XRaiseWindow(ptr, window)
 
 fun Display.moveWindow(window: Window, x: Int, y: Int) = XMoveWindow(ptr, window, x, y)
-fun Display.resizeWindow(window: Window, width: Int, height: Int) = XResizeWindow(ptr, window, width.toUInt(), height.toUInt())
+fun Display.resizeWindow(window: Window, width: Int, height: Int) =
+    XResizeWindow(ptr, window, width.toUInt(), height.toUInt())
 
 fun Display.sendEvent(
     window: Window,
@@ -193,7 +216,9 @@ fun Display.sendEvent(
     event: XEvent?
 ) = XSendEvent(ptr, window, propagate.toInt(), eventMask, event?.ptr)
 
-fun Display.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?) = XCheckTypedEvent(ptr, eventType, eventReturn) == True
+fun Display.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?) =
+    XCheckTypedEvent(ptr, eventType, eventReturn) == True
+
 fun Display.nextEvent(event: XEvent?) = XNextEvent(ptr, event?.ptr)
 
 fun Display.flush() = XFlush(ptr)
