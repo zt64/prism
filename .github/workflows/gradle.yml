@@ -23,7 +23,7 @@ jobs:
           packages: libc6-dev libx11-dev libxft-dev libxpm-dev libfreetype-dev build-essential
           version: 1.0
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '11'
@@ -32,9 +32,17 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2 # v2.6.0
         with:
-          arguments: build
+          arguments: build --scan
+          dependency-graph: generate-and-submit
 
-      - name: Upload reports
-        uses: github/codeql-action/upload-sarif@v2
+      - name: Upload build reports
+
+        uses: actions/upload-artifact@v3
+
         with:
-          sarif_file: build/reports/ktlint
+
+         name: build-reports
+
+         path: build/reports/
+
+
