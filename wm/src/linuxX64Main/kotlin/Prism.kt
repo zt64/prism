@@ -1,12 +1,11 @@
-
 import kotlinx.cinterop.*
 import platform.posix.free
 import util.*
-import util.None
 import xlib.*
 import kotlin.system.exitProcess
 
-class Prism(
+@OptIn(ExperimentalForeignApi::class)
+internal class Prism(
     private val config: Config,
     private val dpy: Display
 ) {
@@ -15,12 +14,15 @@ class Prism(
     private val root = dpy.rootWindow
 
     @OptIn(ExperimentalUnsignedTypes::class)
-    fun startWM() {
+    fun start() {
         val event = nativeHeap.alloc<XEvent>()
 
-        XDefineCursor(dpy.ptr, root, XCreateFontCursor(dpy.ptr, XC_left_ptr))
+        XDefineCursor(dpy.ptr, root, XCreateFontCursor(dpy.ptr, XC_left_ptr.toUInt()))
 
-        dpy.selectInput(root, StructureNotifyMask or SubstructureRedirectMask or SubstructureNotifyMask or ButtonPressMask)
+        dpy.selectInput(
+            window = root,
+            mask = StructureNotifyMask or SubstructureRedirectMask or SubstructureNotifyMask or ButtonPressMask
+        )
         dpy.clearWindow(root)
 
         println("Starting event loop")
@@ -45,8 +47,8 @@ class Prism(
                             x = attrs.x,
                             y = attrs.y,
                             width = attrs.width,
-                            height = (attrs.height + config.header.height).toInt(),
-                            borderWidth = config.border.width.toInt(),
+                            height = (attrs.height + config.header.height),
+                            borderWidth = config.border.width,
                             depth = attrs.depth,
                             clazz = InputOutput,
                             visual = attrs.visual?.pointed,
@@ -59,12 +61,15 @@ class Prism(
                             }
                         )
 
-                        dpy.selectInput(containerWindow, ExposureMask or SubstructureNotifyMask or SubstructureRedirectMask or PropertyChangeMask)
+                        dpy.selectInput(
+                            containerWindow,
+                            ExposureMask or SubstructureNotifyMask or SubstructureRedirectMask or PropertyChangeMask
+                        )
 
                         val headerWindow = dpy.createWindow(
                             parent = containerWindow,
                             width = attrs.width,
-                            height = config.header.height.toInt(),
+                            height = config.header.height,
                             borderWidth = 0,
                             depth = attrs.depth,
                             clazz = InputOutput,
@@ -79,10 +84,10 @@ class Prism(
                                 XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.header.color, ptr)
                             }.pixel
                         )
-                        dpy.reparentWindow(window, containerWindow, 0, config.header.height.toInt())
+                        dpy.reparentWindow(window, containerWindow, 0, config.header.height)
                         dpy.mapWindows(containerWindow, window, headerWindow)
 
-                        clients.add(Client(this@Prism, containerWindow, window, headerWindow))
+                        clients.add(Client(containerWindow, window, headerWindow))
 
                         val currEvent = alloc<XEvent>()
                         while (dpy.nextEvent(currEvent) == Success) {
@@ -103,12 +108,25 @@ class Prism(
                                 }.pointed?.value?.toString() ?: "Unknown"
 
                                 val draw = XftDrawCreate(dpy.ptr, headerWindow, attrs.visual, attrs.colormap)
-                                val font = XftFontOpenName(dpy.ptr, 0, "${config.header.font}:size=${config.header.fontSize}")
+                                val font =
+                                    XftFontOpenName(dpy.ptr, 0, "${config.header.font}:size=${config.header.fontSize}")
                                 val color = alloc<XftColor> {
-                                    XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.header.textColor, ptr)
+                                    XftColorAllocName(
+                                        dpy.ptr,
+                                        attrs.visual,
+                                        attrs.colormap,
+                                        config.header.textColor,
+                                        ptr
+                                    )
                                 }
                                 val extents = alloc<XGlyphInfo> {
-                                    XftTextExtentsUtf8(dpy.ptr, font, fetchedName.cstr.ptr.reinterpret(), fetchedName.length, ptr)
+                                    XftTextExtentsUtf8(
+                                        dpy.ptr,
+                                        font,
+                                        fetchedName.cstr.ptr.reinterpret(),
+                                        fetchedName.length,
+                                        ptr
+                                    )
                                 }
 
                                 XftDrawStringUtf8(
@@ -116,7 +134,7 @@ class Prism(
                                     color = color.ptr,
                                     pub = font,
                                     x = (attrs.width / 2) - (extents.width.toInt() / 2),
-                                    y = (config.header.height / 2 + extents.height.toInt() / 2).toInt(),
+                                    y = config.header.height / 2 + extents.height.toInt() / 2,
                                     string = fetchedName.cstr.ptr.reinterpret(),
                                     len = fetchedName.length
                                 )
@@ -125,10 +143,14 @@ class Prism(
                             }
                         }
 
-//                        dpy.raiseWindows(container, window, header)
-                        dpy.selectInput(window, EnterWindowMask or FocusChangeMask or PropertyChangeMask or StructureNotifyMask)
+                        //                        dpy.prism.wm.raiseWindows(container, window, header)
+                        dpy.selectInput(
+                            window,
+                            EnterWindowMask or FocusChangeMask or PropertyChangeMask or StructureNotifyMask
+                        )
                     }
                 }
+
                 UnmapNotify -> event.xunmap.run {
                     val client = clients.find { it.content == window } ?: return@run
 
@@ -136,6 +158,7 @@ class Prism(
 
                     clients.remove(client)
                 }
+
                 DestroyNotify -> event.xdestroywindow.run {
                     val client = clients.find { it.content == window } ?: return@run
 
@@ -143,6 +166,7 @@ class Prism(
 
                     clients.remove(client)
                 }
+
                 ConfigureRequest -> event.xconfigurerequest.let { ev ->
                     if (ev.window == dpy.rootWindow) return@let // ignore root window config requests
 
@@ -164,13 +188,16 @@ class Prism(
                         )
                     }
                 }
+
                 KeyPress -> event.xkey.run {
-                    if (subwindow != None) dpy.raiseWindow(subwindow)
+                    if (subwindow != NONE) dpy.raiseWindow(subwindow)
                 }
+
                 ButtonPress -> event.xbutton.run {
                     dpy.raiseWindow(subwindow)
 
-                    val client = clients.find { client -> client.container == subwindow || client.header == subwindow } ?: return@run
+                    val client = clients.find { client -> client.container == subwindow || client.header == subwindow }
+                        ?: return@run
 
                     dpy.grabPointer(
                         grabWindow = client.container,
@@ -191,52 +218,57 @@ class Prism(
                         }
                     )
                 }
-                MotionNotify -> if (motionInfo != null) event.xmotion.run {
-                    val client = clients.find { it.container == window || it.header == window } ?: return@run
 
-                    while (dpy.checkTypedEvent(MotionNotify, event.ptr)) Unit
+                MotionNotify -> if (motionInfo != null) {
+                    event.xmotion.run {
+                        val client = clients.find { it.container == window || it.header == window } ?: return@run
 
-                    val start = motionInfo!!.start
-                    val attrs = motionInfo!!.attrs
+                        while (dpy.checkTypedEvent(MotionNotify, event.ptr)) Unit
 
-                    val deltaX = x_root - start.x_root
-                    val deltaY = y_root - start.y_root
+                        val start = motionInfo!!.start
+                        val attrs = motionInfo!!.attrs
 
-                    when (start.button) {
-                        1u -> {
-                            dpy.moveWindow(
-                                window = client.container,
-                                x = attrs.x + deltaX,
-                                y = attrs.y + deltaY
-                            )
-                        }
+                        val deltaX = x_root - start.x_root
+                        val deltaY = y_root - start.y_root
 
-                        3u -> {
-                            dpy.resizeWindow(
-                                window = client.container,
-                                width = maxOf(1, attrs.width + deltaX),
-                                height = maxOf(1, attrs.height + deltaY)
-                            )
+                        when (start.button) {
+                            1u -> {
+                                dpy.moveWindow(
+                                    window = client.container,
+                                    x = attrs.x + deltaX,
+                                    y = attrs.y + deltaY
+                                )
+                            }
 
-                            dpy.resizeWindow(
-                                window = client.content,
-                                width = maxOf(1, attrs.width + deltaX),
-                                height = maxOf(1, attrs.height + deltaY - config.header.height).toInt()
-                            )
+                            3u -> {
+                                dpy.resizeWindow(
+                                    window = client.container,
+                                    width = maxOf(1, attrs.width + deltaX),
+                                    height = maxOf(1, attrs.height + deltaY)
+                                )
 
-                            dpy.resizeWindow(
-                                window = client.header,
-                                width = maxOf(1, attrs.width + deltaX),
-                                height = config.header.height.toInt()
-                            )
+                                dpy.resizeWindow(
+                                    window = client.content,
+                                    width = maxOf(1, attrs.width + deltaX),
+                                    height = maxOf(1, attrs.height + deltaY - config.header.height)
+                                )
+
+                                dpy.resizeWindow(
+                                    window = client.header,
+                                    width = maxOf(1, attrs.width + deltaX),
+                                    height = config.header.height
+                                )
+                            }
                         }
                     }
                 }
+
                 ButtonRelease -> if (motionInfo != null) {
                     free(motionInfo!!.start.ptr)
                     dpy.unGrabPointer()
                     motionInfo = null
                 }
+
                 ClientMessage -> event.xclient.run {
                     when (Atom.from(data.longs[0].toInt())) {
                         Atom.IPC_CLOSE_CLIENT -> {

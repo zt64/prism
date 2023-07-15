@@ -1,43 +1,24 @@
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
-
-   
-
-
-    kotlin("multiplatform") version "1.9.0"
-    kotlin("plugin.serialization") version "1.9.0"
-
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 
-repositories {
-    mavenCentral()
-}
-
-kotlin {
-    linuxX64("native") {
-        compilations.getByName("main") {
-            val xlib by cinterops.creating
-        }
-
-        binaries {
-            executable("prism")
-
-            executable("prismc") {
-                entryPoint = "prismClient"
-            }
-        }
+subprojects {
+    apply {
+        plugin(rootProject.libs.plugins.kotlin.multiplatform.get().pluginId)
+        plugin(rootProject.libs.plugins.ktlint.get().pluginId)
     }
 
-    sourceSets {
-        val nativeMain by getting {
-            dependencies {
-                val ktomlVersion = "0.5.0"
+    configure<KtlintExtension> {
+        outputToConsole.set(true)
+        outputToConsole = true
 
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-linuxx64:1.7.2")
-                implementation("com.akuleshov7:ktoml-core:$ktomlVersion")
-                implementation("com.akuleshov7:ktoml-file:$ktomlVersion")
-                implementation("com.github.ajalt.clikt:clikt-linuxx64:4.1.0")
-                implementation("io.insert-koin:koin-core:3.4.2")
-            }
+        reporters {
+            reporter(ReporterType.SARIF)
+            reporter(ReporterType.CHECKSTYLE)
         }
     }
 }

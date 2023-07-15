@@ -1,20 +1,20 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package util
 
 import Atom
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
-import kotlinx.cinterop.toKString
-import platform.posix.getenv
 import xlib.*
 
-val CurrentTime get() = xlib.CurrentTime.toULong()
-val None = xlib.None.toULong()
+const val CURRENT_TIME = 0UL
+const val NONE = 0UL
 
-fun getConfigDir() = getenv("XDG_CONFIG_HOME")?.toKString() ?: getenv("HOME")?.toKString()?.plus("/.config")
 fun Boolean.toInt() = if (this) True else False
 
-fun Display.sendClientMessage(
+inline fun Display.sendClientMessage(
     type: Atom,
     window: Window = rootWindow,
     propagate: Boolean = false,
@@ -39,7 +39,7 @@ fun Display.sendClientMessage(
     flush()
 }
 
-fun Display.sendClientMessage(
+inline fun Display.sendClientMessage(
     type: Atom,
     propagate: Boolean = false,
     eventMask: Long = NoEventMask,

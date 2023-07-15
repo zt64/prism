@@ -1,8 +1,6 @@
 import xlib.Window
 
-data class Client(
-    private val prism: Prism,
-
+internal data class Client(
     val container: Window,
     val content: Window,
     val header: Window

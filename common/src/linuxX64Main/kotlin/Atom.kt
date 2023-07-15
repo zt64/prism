@@ -8,6 +8,6 @@ enum class Atom {
     IPC_LIST_CLIENTS_RESPONSE;
 
     companion object {
-        fun from(value: Int) = values()[value]
+        fun from(value: Int) = entries[value]
     }
 }

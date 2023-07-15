@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package util
 
 import kotlinx.cinterop.*
@@ -55,12 +57,32 @@ fun Display.createWindow(
 
 fun Display.destroyWindow(window: Window) = XDestroyWindow(ptr, window)
 
+/**
+ * TODO
+ *
+ * @param window
+ * @param valueMask
+ * @param attributesPtr
+ */
 fun Display.configureWindow(
     window: Window,
     valueMask: UInt,
     attributesPtr: XWindowChanges?
 ) = XConfigureWindow(ptr, window, valueMask, attributesPtr?.ptr)
 
+/**
+ * TODO
+ *
+ * @param button
+ * @param modifiers
+ * @param grabWindow
+ * @param ownerEvents
+ * @param eventMask
+ * @param pointerMode
+ * @param keyboardMode
+ * @param confineTo
+ * @param cursor
+ */
 fun Display.grabButton(
     button: UInt,
     modifiers: Int,
@@ -70,23 +92,50 @@ fun Display.grabButton(
     pointerMode: Int = GrabModeAsync,
     keyboardMode: Int = GrabModeAsync,
     confineTo: Window? = null,
-    cursor: Cursor? = null,
+    cursor: Cursor? = null
 ) = XGrabButton(
-    ptr, button, modifiers.toUInt(), grabWindow, ownerEvents.toInt(), eventMask.toUInt(), pointerMode, keyboardMode, confineTo ?: None, cursor ?: None
+    ptr, button, modifiers.toUInt(), grabWindow, ownerEvents.toInt(), eventMask.toUInt(), pointerMode, keyboardMode, confineTo ?: NONE, cursor ?: NONE
 )
 
+/**
+ * TODO
+ *
+ * @param grabWindow
+ * @param ownerEvents
+ * @param eventMask
+ * @param pointerMode
+ * @param keyboardMode
+ * @param confineTo
+ * @param cursor
+ * @param time
+ */
 fun Display.grabPointer(
     grabWindow: Window,
     ownerEvents: Boolean,
     eventMask: Long,
     pointerMode: Int = GrabModeAsync,
     keyboardMode: Int = GrabModeAsync,
-    confineTo: Window = None,
-    cursor: Cursor = None,
-    time: Time = CurrentTime
+    confineTo: Window = NONE,
+    cursor: Cursor = NONE,
+    time: Time = CURRENT_TIME
 ) = XGrabPointer(ptr, grabWindow, ownerEvents.toInt(), eventMask.toUInt(), pointerMode, keyboardMode, confineTo, cursor, time)
-fun Display.unGrabPointer(time: Time = CurrentTime) = XUngrabPointer(ptr, time)
+fun Display.unGrabPointer(time: Time = CURRENT_TIME) = XUngrabPointer(ptr, time)
 
+/**
+ * TODO
+ *
+ * @param window
+ * @param property
+ * @param longOffset
+ * @param longLength
+ * @param delete
+ * @param reqType
+ * @param actualType
+ * @param actualFormat
+ * @param nitems
+ * @param bytesAfter
+ * @param prop
+ */
 fun Display.getWindowProperty(
     window: Window,
     property: Atom,
@@ -117,7 +166,7 @@ fun Display.getWindowProperty(
 fun Display.setInputFocus(
     focus: Window,
     revertTo: Int,
-    time: Time = CurrentTime
+    time: Time = CURRENT_TIME
 ) = XSetInputFocus(ptr, focus, revertTo, time)
 
 fun Display.getWindowAttributes(window: Window) = nativeHeap.alloc<XWindowAttributes> {
