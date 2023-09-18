@@ -19,4 +19,4 @@ ktoml = ["ktoml-core", "ktoml-file"]
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "11.5.0" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "11.6.0" }
