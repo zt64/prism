@@ -4,24 +4,29 @@ import util.*
 import xlib.*
 import kotlin.system.exitProcess
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
 internal class Prism(
     private val config: Config,
-    private val dpy: Display
-) {
-    private val clients = mutableListOf<Client>()
+    private val dpy: DisplayPtr
+) : AutoCloseable {
+    private val clients = ArrayList<Client>()
     private var motionInfo: MotionInfo? = null
     private val root = dpy.rootWindow
+
+    constructor(display: String?) : this(
+        config = getConfig(),
+        dpy = XOpenDisplay(display) ?: error("Failed to open display")
+    )
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun start() {
         val event = nativeHeap.alloc<XEvent>()
 
-        XDefineCursor(dpy.ptr, root, XCreateFontCursor(dpy.ptr, XC_left_ptr.toUInt()))
+        XDefineCursor(dpy, root, XCreateFontCursor(dpy, XC_left_ptr.toUInt()))
 
         dpy.selectInput(
             window = root,
-            mask = StructureNotifyMask or SubstructureRedirectMask or SubstructureNotifyMask or ButtonPressMask
+            StructureNotifyMask, SubstructureRedirectMask, SubstructureNotifyMask, ButtonPressMask
         )
         dpy.clearWindow(root)
 
@@ -40,14 +45,14 @@ internal class Prism(
                         val frameAttrs = alloc<XSetWindowAttributes> {
                             colormap = attrs.colormap
                             border_pixel = alloc<XftColor> {
-                                XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.border.color, ptr)
+                                XftColorAllocName(dpy, attrs.visual, attrs.colormap, config.border.color, ptr)
                             }.pixel
                         }
                         val containerWindow = dpy.createWindow(
                             x = attrs.x,
                             y = attrs.y,
                             width = attrs.width,
-                            height = (attrs.height + config.header.height),
+                            height = attrs.height + config.header.height,
                             borderWidth = config.border.width,
                             depth = attrs.depth,
                             clazz = InputOutput,
@@ -56,14 +61,14 @@ internal class Prism(
                             attributes = alloc<XSetWindowAttributes> {
                                 colormap = attrs.colormap
                                 border_pixel = alloc<XftColor> {
-                                    XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.border.color, ptr)
+                                    XftColorAllocName(dpy, attrs.visual, attrs.colormap, config.border.color, ptr)
                                 }.pixel
                             }
                         )
 
                         dpy.selectInput(
-                            containerWindow,
-                            ExposureMask or SubstructureNotifyMask or SubstructureRedirectMask or PropertyChangeMask
+                            window = containerWindow,
+                            ExposureMask, SubstructureNotifyMask, SubstructureRedirectMask, PropertyChangeMask
                         )
 
                         val headerWindow = dpy.createWindow(
@@ -81,19 +86,19 @@ internal class Prism(
                         dpy.setWindowBackground(
                             window = headerWindow,
                             pixel = alloc<XftColor> {
-                                XftColorAllocName(dpy.ptr, attrs.visual, attrs.colormap, config.header.color, ptr)
+                                XftColorAllocName(dpy, attrs.visual, attrs.colormap, config.header.color, ptr)
                             }.pixel
                         )
-                        dpy.reparentWindow(window, containerWindow, 0, config.header.height)
+                        dpy.reparentWindow(window, containerWindow, y = config.header.height)
                         dpy.mapWindows(containerWindow, window, headerWindow)
 
-                        clients.add(Client(containerWindow, window, headerWindow))
+                        clients += Client(containerWindow, window, headerWindow)
 
                         val currEvent = alloc<XEvent>()
                         while (dpy.nextEvent(currEvent) == Success) {
                             if (currEvent.type == Expose) {
                                 val fetchedName = alloc<CPointerVar<ByteVar>> {
-                                    XFetchName(dpy.ptr, window, ptr)
+                                    XFetchName(dpy, window, ptr)
                                 }.value?.toKString() ?: alloc<CPointerVar<UByteVar>> {
                                     dpy.getWindowProperty(
                                         window = window,
@@ -107,12 +112,12 @@ internal class Prism(
                                     )
                                 }.pointed?.value?.toString() ?: "Unknown"
 
-                                val draw = XftDrawCreate(dpy.ptr, headerWindow, attrs.visual, attrs.colormap)
+                                val draw = XftDrawCreate(dpy, headerWindow, attrs.visual, attrs.colormap)
                                 val font =
-                                    XftFontOpenName(dpy.ptr, 0, "${config.header.font}:size=${config.header.fontSize}")
+                                    XftFontOpenName(dpy, 0, "${config.header.font}:size=${config.header.fontSize}")
                                 val color = alloc<XftColor> {
                                     XftColorAllocName(
-                                        dpy.ptr,
+                                        dpy,
                                         attrs.visual,
                                         attrs.colormap,
                                         config.header.textColor,
@@ -121,7 +126,7 @@ internal class Prism(
                                 }
                                 val extents = alloc<XGlyphInfo> {
                                     XftTextExtentsUtf8(
-                                        dpy.ptr,
+                                        dpy,
                                         font,
                                         fetchedName.cstr.ptr.reinterpret(),
                                         fetchedName.length,
@@ -145,8 +150,8 @@ internal class Prism(
 
                         //                        dpy.prism.wm.raiseWindows(container, window, header)
                         dpy.selectInput(
-                            window,
-                            EnterWindowMask or FocusChangeMask or PropertyChangeMask or StructureNotifyMask
+                            window = window,
+                            EnterWindowMask, FocusChangeMask, PropertyChangeMask, StructureNotifyMask
                         )
                     }
                 }
@@ -156,7 +161,7 @@ internal class Prism(
 
                     dpy.unmapWindow(client.container)
 
-                    clients.remove(client)
+                    clients -= client
                 }
 
                 DestroyNotify -> event.xdestroywindow.run {
@@ -164,7 +169,7 @@ internal class Prism(
 
                     dpy.destroyWindow(client.container)
 
-                    clients.remove(client)
+                    clients -= client
                 }
 
                 ConfigureRequest -> event.xconfigurerequest.let { ev ->
@@ -265,7 +270,7 @@ internal class Prism(
 
                 ButtonRelease -> if (motionInfo != null) {
                     free(motionInfo!!.start.ptr)
-                    dpy.unGrabPointer()
+                    dpy.ungrabPointer()
                     motionInfo = null
                 }
 
@@ -316,5 +321,10 @@ internal class Prism(
                 }
             }
         }
+    }
+
+    override fun close() {
+        dpy.close()
+        nativeHeap.free(dpy)
     }
 }

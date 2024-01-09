@@ -1,22 +1,23 @@
-import kotlinx.cinterop.*
-import kotlinx.cli.ArgParser
-import kotlinx.cli.ArgType
-import kotlinx.cli.ExperimentalCli
-import kotlinx.cli.Subcommand
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.types.int
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.get
+import kotlinx.cinterop.memScoped
 import util.*
 import xlib.*
 
-@ExperimentalCli
 @OptIn(ExperimentalForeignApi::class)
 fun main(args: Array<String>) {
-    val parser = ArgParser("prismc")
+    val dpy = XOpenDisplay(null) ?: error("Cannot open display")
 
-    val dpy = XOpenDisplay(null)?.pointed ?: error("Cannot open display")
+    class Mul : CliktCommand("Multiply a number by two") {
+        private val number by argument("The number to multiply by two").int()
 
-    class Mul : Subcommand("mul", "Multiply a number by two") {
-        val number by argument(ArgType.Int, "num", "The number to multiply by two")
-
-        override fun execute() {
+        override fun run() {
             memScoped {
                 val dummyWindow = dpy.createWindow(
                     width = 1,
@@ -42,11 +43,11 @@ fun main(args: Array<String>) {
                             serial = 0u
                             format = 32
                             send_event = True
-                            display = dpy.ptr
+                            display = dpy
                         }
                     }
 
-                    dpy.sendEvent(dpy.rootWindow, false, SubstructureNotifyMask, event)
+                    dpy.sendEvent(false, SubstructureNotifyMask, event)
                     dpy.flush()
                 }
 
@@ -67,22 +68,25 @@ fun main(args: Array<String>) {
         }
     }
 
-    class CloseClient : Subcommand("close-client", "Close a client") {
-        val clientId by argument(ArgType.Int, "clientId", "The id of the client to close")
+    class CloseClient : CliktCommand("Close a client") {
+        private val clientId by argument("clientId", "The id of the client to close").int()
 
-        override fun execute() {
+        override fun run() {
             dpy.sendClientMessage(Atom.IPC_CLOSE_CLIENT, false, SubstructureNotifyMask, clientId.toLong())
         }
     }
 
-    class Exit : Subcommand("exit", "Exit prism") {
-        override fun execute() {
+    class Exit : CliktCommand("Exit prism") {
+        override fun run() {
             println("Exiting...")
 
             dpy.sendClientMessage(Atom.IPC_EXIT, false, SubstructureNotifyMask)
         }
     }
 
-    parser.subcommands(Mul(), CloseClient(), Exit())
-    parser.parse(args)
+    NoOpCliktCommand().subcommands(
+        Mul(),
+        CloseClient(),
+        Exit()
+    ).main(args)
 }

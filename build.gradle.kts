@@ -1,6 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
-import org.jlleitschuh.gradle.ktlint.tasks.GenerateReportsTask
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -14,16 +13,20 @@ subprojects {
     }
 
     configure<KtlintExtension> {
-        version = "0.49.1"
+        version = "1.1.0"
 
         reporters {
-            reporter(ReporterType.SARIF)
+            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.JSON)
         }
     }
 
-    tasks.withType<GenerateReportsTask> {
-        reportsOutputDirectory.set(
-            buildDir.resolve("reports/ktlint/$name")
-        )
+    with(kotlinExtension) {
+        sourceSets {
+            all {
+                languageSettings {
+                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                }
+            }
+        }
     }
 }

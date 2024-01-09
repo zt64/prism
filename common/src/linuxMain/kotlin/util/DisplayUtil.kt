@@ -5,7 +5,7 @@ package util
 import kotlinx.cinterop.*
 import xlib.*
 
-val Display.rootWindow get() = XDefaultRootWindow(ptr)
+val DisplayPtr.rootWindow get() = XDefaultRootWindow(this)
 
 var anonymousStruct2.bytes
     get() = listOf(b[0], b[1], b[2], b[3], b[4])
@@ -19,17 +19,21 @@ var anonymousStruct2.longs
     get() = listOf(l[0], l[1], l[2], l[3], l[4])
     set(v) = v.forEachIndexed { index, long -> l[index] = long }
 
-fun Display.reparentWindow(window: Window, parent: Window, x: Int = 0, y: Int = 0) =
-    XReparentWindow(ptr, window, parent, x, y)
+fun DisplayPtr.reparentWindow(window: Window, parent: Window, x: Int = 0, y: Int = 0): Int {
+    return XReparentWindow(this, window, parent, x, y)
+}
 
 @OptIn(ExperimentalUnsignedTypes::class)
-fun Display.mapWindows(vararg windows: Window) = windows.forEach(::mapWindow)
-fun Display.mapWindow(window: Window) = XMapWindow(ptr, window)
-fun Display.unmapWindow(window: Window) = XUnmapWindow(ptr, window)
+fun DisplayPtr.mapWindows(vararg windows: Window) = windows.forEach(::mapWindow)
+fun DisplayPtr.mapWindow(window: Window) = XMapWindow(this, window)
+fun DisplayPtr.unmapWindow(window: Window) = XUnmapWindow(this, window)
 
-fun Display.clearWindow(window: Window) = XClearWindow(ptr, window)
-fun Display.selectInput(window: Window, mask: Long) = XSelectInput(ptr, window, mask)
-fun Display.createWindow(
+fun DisplayPtr.clearWindow(window: Window) = XClearWindow(this, window)
+fun DisplayPtr.selectInput(window: Window, vararg mask: Long): Int {
+    return XSelectInput(this, window, mask.reduce(Long::or))
+}
+
+fun DisplayPtr.createWindow(
     parent: Window = rootWindow,
     x: Int = 0,
     y: Int = 0,
@@ -42,7 +46,7 @@ fun Display.createWindow(
     valueMask: Long,
     attributes: XSetWindowAttributes?
 ) = XCreateWindow(
-    ptr,
+    this,
     parent,
     x,
     y,
@@ -56,7 +60,7 @@ fun Display.createWindow(
     attributes?.ptr
 )
 
-fun Display.destroyWindow(window: Window) = XDestroyWindow(ptr, window)
+fun DisplayPtr.destroyWindow(window: Window) = XDestroyWindow(this, window)
 
 /**
  * TODO
@@ -65,11 +69,11 @@ fun Display.destroyWindow(window: Window) = XDestroyWindow(ptr, window)
  * @param valueMask
  * @param attributesPtr
  */
-fun Display.configureWindow(
+fun DisplayPtr.configureWindow(
     window: Window,
     valueMask: UInt,
     attributesPtr: XWindowChanges?
-) = XConfigureWindow(ptr, window, valueMask, attributesPtr?.ptr)
+) = XConfigureWindow(this, window, valueMask, attributesPtr?.ptr)
 
 /**
  * TODO
@@ -84,7 +88,7 @@ fun Display.configureWindow(
  * @param confineTo
  * @param cursor
  */
-fun Display.grabButton(
+fun DisplayPtr.grabButton(
     button: UInt,
     modifiers: Int,
     grabWindow: Window,
@@ -95,7 +99,7 @@ fun Display.grabButton(
     confineTo: Window? = null,
     cursor: Cursor? = null
 ) = XGrabButton(
-    ptr,
+    this,
     button,
     modifiers.toUInt(),
     grabWindow,
@@ -119,7 +123,7 @@ fun Display.grabButton(
  * @param cursor
  * @param time
  */
-fun Display.grabPointer(
+fun DisplayPtr.grabPointer(
     grabWindow: Window,
     ownerEvents: Boolean,
     eventMask: Long,
@@ -129,7 +133,7 @@ fun Display.grabPointer(
     cursor: Cursor = NONE,
     time: Time = CURRENT_TIME
 ) = XGrabPointer(
-    ptr,
+    this,
     grabWindow,
     ownerEvents.toInt(),
     eventMask.toUInt(),
@@ -140,7 +144,7 @@ fun Display.grabPointer(
     time
 )
 
-fun Display.unGrabPointer(time: Time = CURRENT_TIME) = XUngrabPointer(ptr, time)
+fun DisplayPtr.ungrabPointer(time: Time = CURRENT_TIME) = XUngrabPointer(this, time)
 
 /**
  * TODO
@@ -157,7 +161,7 @@ fun Display.unGrabPointer(time: Time = CURRENT_TIME) = XUngrabPointer(ptr, time)
  * @param bytesAfter
  * @param prop
  */
-fun Display.getWindowProperty(
+fun DisplayPtr.getWindowProperty(
     window: Window,
     property: Atom,
     longOffset: Long = 0,
@@ -170,7 +174,7 @@ fun Display.getWindowProperty(
     bytesAfter: ULongVar? = null,
     prop: CValuesRef<CPointerVar<UByteVar>>? = null
 ) = XGetWindowProperty(
-    ptr,
+    this,
     window,
     property,
     longOffset,
@@ -184,44 +188,52 @@ fun Display.getWindowProperty(
     prop
 )
 
-fun Display.setInputFocus(
+fun DisplayPtr.setInputFocus(
     focus: Window,
     revertTo: Int,
     time: Time = CURRENT_TIME
-) = XSetInputFocus(ptr, focus, revertTo, time)
+) = XSetInputFocus(this, focus, revertTo, time)
 
-fun Display.getWindowAttributes(window: Window) = nativeHeap.alloc<XWindowAttributes> {
+fun DisplayPtr.getWindowAttributes(window: Window) = nativeHeap.alloc<XWindowAttributes> {
     getWindowAttributes(window, ptr)
 }
 
-fun Display.getWindowAttributes(
+fun DisplayPtr.getWindowAttributes(
     window: Window,
     windowsAttributeReturn: CValuesRef<XWindowAttributes>?
-) = XGetWindowAttributes(ptr, window, windowsAttributeReturn)
+) = XGetWindowAttributes(this, window, windowsAttributeReturn)
 
-fun Display.setWindowBackground(window: Window, pixel: ULong) = XSetWindowBackground(ptr, window, pixel)
+fun DisplayPtr.setWindowBackground(window: Window, pixel: ULong) = XSetWindowBackground(this, window, pixel)
 
 @OptIn(ExperimentalUnsignedTypes::class)
-fun Display.raiseWindows(vararg window: Window) = window.forEach(::raiseWindow)
-fun Display.raiseWindow(window: Window) = XRaiseWindow(ptr, window)
+fun DisplayPtr.raiseWindows(vararg window: Window) = window.forEach(::raiseWindow)
+fun DisplayPtr.raiseWindow(window: Window) = XRaiseWindow(this, window)
 
-fun Display.moveWindow(window: Window, x: Int, y: Int) = XMoveWindow(ptr, window, x, y)
-fun Display.resizeWindow(window: Window, width: Int, height: Int) =
-    XResizeWindow(ptr, window, width.toUInt(), height.toUInt())
+fun DisplayPtr.moveWindow(window: Window, x: Int, y: Int) = XMoveWindow(this, window, x, y)
+fun DisplayPtr.resizeWindow(window: Window, width: Int, height: Int): Int {
+    return XResizeWindow(this, window, width.toUInt(), height.toUInt())
+}
 
-fun Display.sendEvent(
+fun DisplayPtr.sendEvent(
+    propagate: Boolean,
+    eventMask: Long,
+    event: XEvent?
+) = sendEvent(rootWindow, propagate, eventMask, event)
+
+fun DisplayPtr.sendEvent(
     window: Window,
     propagate: Boolean,
     eventMask: Long,
     event: XEvent?
-) = XSendEvent(ptr, window, propagate.toInt(), eventMask, event?.ptr)
+) = XSendEvent(this, window, propagate.toInt(), eventMask, event?.ptr)
 
-fun Display.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?) =
-    XCheckTypedEvent(ptr, eventType, eventReturn) == True
+fun DisplayPtr.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?): Boolean {
+    return XCheckTypedEvent(this, eventType, eventReturn) == True
+}
 
-fun Display.nextEvent(event: XEvent?) = XNextEvent(ptr, event?.ptr)
+fun DisplayPtr.nextEvent(event: XEvent?) = XNextEvent(this, event?.ptr)
 
-fun Display.flush() = XFlush(ptr)
-fun Display.sync(discard: Boolean) = XSync(ptr, discard.toInt())
-fun Display.internAtom(name: String, onlyIfExists: Boolean = false) = XInternAtom(ptr, name, onlyIfExists.toInt())
-fun Display.close() = XCloseDisplay(ptr)
+fun DisplayPtr.flush() = XFlush(this)
+fun DisplayPtr.sync(discard: Boolean) = XSync(this, discard.toInt())
+fun DisplayPtr.internAtom(name: String, onlyIfExists: Boolean = false) = XInternAtom(this, name, onlyIfExists.toInt())
+fun DisplayPtr.close() = XCloseDisplay(this)

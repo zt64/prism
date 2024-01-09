@@ -3,17 +3,20 @@ plugins {
 }
 
 kotlin {
-    linuxX64 {
-        binaries {
+    listOf(
+        linuxX64()
+        // linuxArm64()
+    ).forEach {
+        it.binaries {
             executable("prismc")
         }
     }
 
     sourceSets {
-        getByName("linuxX64Main") {
+        linuxMain {
             dependencies {
                 implementation(projects.common)
-                implementation(libs.kotlin.cli)
+                implementation(libs.clikt)
                 implementation(libs.kotlin.coroutines.core)
             }
         }

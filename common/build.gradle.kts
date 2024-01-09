@@ -3,8 +3,11 @@ plugins {
 }
 
 kotlin {
-    linuxX64 {
-        compilations.getByName("main") {
+    listOf(
+        linuxX64()
+        // linuxArm64()
+    ).forEach {
+        it.compilations.getByName("main") {
             cinterops.create("xlib")
         }
     }

@@ -18,27 +18,27 @@ class KeyPress(
 ) : Event
 
 sealed interface Request {
-    val opcode: Byte
+    val opcode: OpCode
     val requestLength: Short
 }
 
 class Bell(private val percent: Byte) : Request {
-    override val opcode: Byte = 104
+    override val opcode: OpCode = OpCode.BELL
     override val requestLength: Short = 1
 
     internal val packet = buildPacket {
-        writeByte(opcode)
+        writeByte(opcode.ordinal.toByte())
         writeByte(percent)
         writeShort(requestLength)
     }
 }
 
 class ListProperties(private val window: Window) : Request {
-    override val opcode: Byte = 21
+    override val opcode: OpCode = OpCode.LIST_PROPERTIES
     override val requestLength: Short = 2
 
     internal val packet = buildPacket {
-        writeByte(opcode)
+        writeByte(opcode.ordinal.toByte())
         writeByte(0) // unused
         writeShort(requestLength)
         writeInt(window.id)

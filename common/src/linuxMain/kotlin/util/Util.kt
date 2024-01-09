@@ -3,18 +3,20 @@
 package util
 
 import Atom
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
 import xlib.*
 
 const val CURRENT_TIME = 0UL
 const val NONE = 0UL
 
+typealias DisplayPtr = CPointer<Display>
+
 fun Boolean.toInt() = if (this) True else False
 
-inline fun Display.sendClientMessage(
+inline fun DisplayPtr.sendClientMessage(
     type: Atom,
     window: Window = rootWindow,
     propagate: Boolean = false,
@@ -29,7 +31,7 @@ inline fun Display.sendClientMessage(
                 serial = 0u
                 format = 32
                 send_event = True
-                display = this@sendClientMessage.ptr
+                display = this@sendClientMessage
             }
         }
 
@@ -39,7 +41,7 @@ inline fun Display.sendClientMessage(
     flush()
 }
 
-inline fun Display.sendClientMessage(
+inline fun DisplayPtr.sendClientMessage(
     type: Atom,
     propagate: Boolean = false,
     eventMask: Long = NoEventMask,

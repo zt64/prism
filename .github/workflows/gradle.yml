@@ -17,7 +17,7 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: actions/checkout@v4
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libc6-dev libx11-dev libxft-dev libxpm-dev libfreetype-dev build-essential
@@ -26,7 +26,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Build with Gradle
@@ -36,13 +36,7 @@ jobs:
           dependency-graph: generate-and-submit
 
       - name: Upload build reports
-
         uses: actions/upload-artifact@v4
-
         with:
-
-         name: build-reports
-
-         path: build/reports/
-
-
+          name: build-reports
+          path: build/reports/
