@@ -2,7 +2,7 @@
 kotlin = "1.9.22"
 ktor = "2.3.8"
 ktoml = "0.5.1"
-coroutines = "1.7.3"
+coroutines = "1.8.0"
 ktlint-gradle = "12.1.0"
 ktlint = "1.1.0"
 clikt = "4.2.2"
