@@ -6,7 +6,6 @@ sealed interface Event {
 
 class KeyPress(
     override val code: Short = 2,
-
     val root: Window,
     val event: Window,
     val child: Window,

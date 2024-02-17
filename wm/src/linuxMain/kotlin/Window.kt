@@ -5,10 +5,8 @@ data class Window(val id: Int) {
     val events: Flow<Event> = flow { }
 
     fun configureWindow() {
-
     }
 
     fun sendEvent(event: Request) {
-
     }
 }

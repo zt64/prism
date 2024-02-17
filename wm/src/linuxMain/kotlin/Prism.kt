@@ -26,7 +26,10 @@ internal class Prism(
 
         dpy.selectInput(
             window = root,
-            StructureNotifyMask, SubstructureRedirectMask, SubstructureNotifyMask, ButtonPressMask
+            StructureNotifyMask,
+            SubstructureRedirectMask,
+            SubstructureNotifyMask,
+            ButtonPressMask
         )
         dpy.clearWindow(root)
 
@@ -68,7 +71,10 @@ internal class Prism(
 
                         dpy.selectInput(
                             window = containerWindow,
-                            ExposureMask, SubstructureNotifyMask, SubstructureRedirectMask, PropertyChangeMask
+                            ExposureMask,
+                            SubstructureNotifyMask,
+                            SubstructureRedirectMask,
+                            PropertyChangeMask
                         )
 
                         val headerWindow = dpy.createWindow(
@@ -151,7 +157,10 @@ internal class Prism(
                         //                        dpy.prism.wm.raiseWindows(container, window, header)
                         dpy.selectInput(
                             window = window,
-                            EnterWindowMask, FocusChangeMask, PropertyChangeMask, StructureNotifyMask
+                            EnterWindowMask,
+                            FocusChangeMask,
+                            PropertyChangeMask,
+                            StructureNotifyMask
                         )
                     }
                 }

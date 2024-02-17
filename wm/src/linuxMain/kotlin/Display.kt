@@ -1,15 +1,9 @@
-// class Display {
-//    val rootWindow: Window
-//
-//    init {
-//
-//    }
-//
-//    fun bell(percent: Int) {
-//
-//    }
-//
-//    fun createWindow() {
-//
-//    }
-// }
+class Display {
+    // val rootWindow: Window
+
+    fun bell(percent: Int) {
+    }
+
+    fun createWindow() {
+    }
+}

@@ -25,10 +25,13 @@ fun DisplayPtr.reparentWindow(window: Window, parent: Window, x: Int = 0, y: Int
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun DisplayPtr.mapWindows(vararg windows: Window) = windows.forEach(::mapWindow)
+
 fun DisplayPtr.mapWindow(window: Window) = XMapWindow(this, window)
+
 fun DisplayPtr.unmapWindow(window: Window) = XUnmapWindow(this, window)
 
 fun DisplayPtr.clearWindow(window: Window) = XClearWindow(this, window)
+
 fun DisplayPtr.selectInput(window: Window, vararg mask: Long): Int {
     return XSelectInput(this, window, mask.reduce(Long::or))
 }
@@ -69,11 +72,8 @@ fun DisplayPtr.destroyWindow(window: Window) = XDestroyWindow(this, window)
  * @param valueMask
  * @param attributesPtr
  */
-fun DisplayPtr.configureWindow(
-    window: Window,
-    valueMask: UInt,
-    attributesPtr: XWindowChanges?
-) = XConfigureWindow(this, window, valueMask, attributesPtr?.ptr)
+fun DisplayPtr.configureWindow(window: Window, valueMask: UInt, attributesPtr: XWindowChanges?) =
+    XConfigureWindow(this, window, valueMask, attributesPtr?.ptr)
 
 /**
  * TODO
@@ -188,44 +188,35 @@ fun DisplayPtr.getWindowProperty(
     prop
 )
 
-fun DisplayPtr.setInputFocus(
-    focus: Window,
-    revertTo: Int,
-    time: Time = CURRENT_TIME
-) = XSetInputFocus(this, focus, revertTo, time)
+fun DisplayPtr.setInputFocus(focus: Window, revertTo: Int, time: Time = CURRENT_TIME) =
+    XSetInputFocus(this, focus, revertTo, time)
 
-fun DisplayPtr.getWindowAttributes(window: Window) = nativeHeap.alloc<XWindowAttributes> {
-    getWindowAttributes(window, ptr)
-}
+fun DisplayPtr.getWindowAttributes(window: Window) =
+    nativeHeap.alloc<XWindowAttributes> {
+        getWindowAttributes(window, ptr)
+    }
 
-fun DisplayPtr.getWindowAttributes(
-    window: Window,
-    windowsAttributeReturn: CValuesRef<XWindowAttributes>?
-) = XGetWindowAttributes(this, window, windowsAttributeReturn)
+fun DisplayPtr.getWindowAttributes(window: Window, windowsAttributeReturn: CValuesRef<XWindowAttributes>?) =
+    XGetWindowAttributes(this, window, windowsAttributeReturn)
 
 fun DisplayPtr.setWindowBackground(window: Window, pixel: ULong) = XSetWindowBackground(this, window, pixel)
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun DisplayPtr.raiseWindows(vararg window: Window) = window.forEach(::raiseWindow)
+
 fun DisplayPtr.raiseWindow(window: Window) = XRaiseWindow(this, window)
 
 fun DisplayPtr.moveWindow(window: Window, x: Int, y: Int) = XMoveWindow(this, window, x, y)
+
 fun DisplayPtr.resizeWindow(window: Window, width: Int, height: Int): Int {
     return XResizeWindow(this, window, width.toUInt(), height.toUInt())
 }
 
-fun DisplayPtr.sendEvent(
-    propagate: Boolean,
-    eventMask: Long,
-    event: XEvent?
-) = sendEvent(rootWindow, propagate, eventMask, event)
+fun DisplayPtr.sendEvent(propagate: Boolean, eventMask: Long, event: XEvent?) =
+    sendEvent(rootWindow, propagate, eventMask, event)
 
-fun DisplayPtr.sendEvent(
-    window: Window,
-    propagate: Boolean,
-    eventMask: Long,
-    event: XEvent?
-) = XSendEvent(this, window, propagate.toInt(), eventMask, event?.ptr)
+fun DisplayPtr.sendEvent(window: Window, propagate: Boolean, eventMask: Long, event: XEvent?) =
+    XSendEvent(this, window, propagate.toInt(), eventMask, event?.ptr)
 
 fun DisplayPtr.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?): Boolean {
     return XCheckTypedEvent(this, eventType, eventReturn) == True
@@ -234,6 +225,9 @@ fun DisplayPtr.checkTypedEvent(eventType: Int, eventReturn: CValuesRef<XEvent>?)
 fun DisplayPtr.nextEvent(event: XEvent?) = XNextEvent(this, event?.ptr)
 
 fun DisplayPtr.flush() = XFlush(this)
+
 fun DisplayPtr.sync(discard: Boolean) = XSync(this, discard.toInt())
+
 fun DisplayPtr.internAtom(name: String, onlyIfExists: Boolean = false) = XInternAtom(this, name, onlyIfExists.toInt())
+
 fun DisplayPtr.close() = XCloseDisplay(this)
