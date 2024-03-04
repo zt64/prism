@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.9.22"
-ktor = "2.3.8"
+ktor = "2.3.9"
 ktoml = "0.5.1"
 coroutines = "1.8.0"
 ktlint-gradle = "12.1.0"
