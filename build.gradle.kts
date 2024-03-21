@@ -1,23 +1,29 @@
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.ktlint) apply false
 }
 
-subprojects {
+allprojects {
     apply {
-        plugin(rootProject.libs.plugins.kotlin.multiplatform.get().pluginId)
         plugin(rootProject.libs.plugins.ktlint.get().pluginId)
     }
 
     configure<KtlintExtension> {
-        version = "1.1.0"
+        version = rootProject.libs.versions.ktlint.get()
 
         reporters {
-            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.JSON)
+            reporter(ReporterType.JSON)
         }
+    }
+}
+
+subprojects {
+    apply {
+        plugin(rootProject.libs.plugins.kotlin.multiplatform.get().pluginId)
     }
 
     with(kotlinExtension) {
