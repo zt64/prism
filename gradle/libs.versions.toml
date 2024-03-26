@@ -5,7 +5,7 @@ ktoml = "0.5.1"
 coroutines = "1.8.0"
 clikt = "4.2.2"
 ktlintPlugin = "12.1.0"
-ktlint = "1.2.2"
+ktlint = "1.2.1"
 
 [libraries]
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
