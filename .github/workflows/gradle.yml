@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -18,6 +18,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          dependency-graph: generate-and-submit
+
+      - name: Check
+        run: ./gradlew check
+
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libc6-dev libx11-dev libxft-dev libxpm-dev libfreetype-dev build-essential
@@ -29,11 +38,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2 # v2.6.0
-        with:
-          arguments: build --scan
-          dependency-graph: generate-and-submit
+      - name: Build
+        run: ./gradlew build --scan
 
       - name: Upload build reports
         uses: actions/upload-artifact@v4
