@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.0-RC1"
+kotlin = "2.0.0-RC2"
 ktor = "2.3.10"
 ktoml = "0.5.1"
 coroutines = "1.8.0"
