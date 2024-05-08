@@ -19,50 +19,27 @@ on:
       - "gradle/**"
 
 jobs:
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Check
-        run: ./gradlew check
-
   build:
     name: Build
-    needs: check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          dependency-graph: generate-and-submit
-
-      - name: Check
-        run: ./gradlew check
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: libc6-dev libx11-dev libxft-dev libxpm-dev libfreetype-dev build-essential
+          packages: libc6-dev libx11-dev libxft-dev libxpm-dev libfreetype-dev build-essential Xfvb
           version: 1.0
 
       - name: Build
@@ -70,6 +47,7 @@ jobs:
 
       - name: Upload build reports
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: build-reports
-          path: build/reports/
+          path: "**/build/reports/"

@@ -4,8 +4,8 @@ plugins {
 
 kotlin {
     listOf(
-        linuxX64(),
-        linuxArm64()
+        linuxX64()
+        // linuxArm64()
     ).forEach {
         it.binaries {
             executable("prismc")
