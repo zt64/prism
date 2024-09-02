@@ -13,7 +13,7 @@ kotlin {
     ).forEach {
         it.binaries {
             executable("prism") {
-                entryPoint = "main"
+                entryPoint = "dev.zt64.prism.main"
             }
         }
     }

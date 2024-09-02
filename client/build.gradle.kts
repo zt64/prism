@@ -8,7 +8,9 @@ kotlin {
         // linuxArm64()
     ).forEach {
         it.binaries {
-            executable("prismc")
+            executable("prismc") {
+                entryPoint = "dev.zt64.prism.main"
+            }
         }
     }
 
