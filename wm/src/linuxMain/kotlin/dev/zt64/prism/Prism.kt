@@ -6,7 +6,7 @@ import platform.posix.free
 import xlib.*
 import kotlin.system.exitProcess
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalForeignApi::class)
 internal class Prism(
     private val config: Config,
     private val dpy: DisplayPtr
