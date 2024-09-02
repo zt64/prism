@@ -55,11 +55,11 @@ internal val ktomlConf = TomlInputConfig(
     allowEscapedQuotesInLiteralStrings = true
 )
 
-fun getConfig(path: String? = null): Config {
+fun getConfig(configPath: String? = null): Config {
     val configDir = getenv("XDG_CONFIG_HOME")?.toKString()
         ?: getenv("HOME")?.toKString()?.plus("/.config")
 
-    val path = (path ?: configDir?.plus("/prism/config.toml"))?.takeIf {
+    val path = (configPath ?: configDir?.plus("/prism/config.toml"))?.takeIf {
         access(it, R_OK) == 0
     }
 
