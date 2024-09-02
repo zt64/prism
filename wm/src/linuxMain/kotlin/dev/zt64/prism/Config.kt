@@ -1,3 +1,5 @@
+package dev.zt64.prism
+
 import com.akuleshov7.ktoml.TomlInputConfig
 import com.akuleshov7.ktoml.file.TomlFileReader
 import kotlinx.cinterop.toKString
@@ -47,7 +49,7 @@ data class Config(
     )
 }
 
-private val ktomlConf = TomlInputConfig(
+internal val ktomlConf = TomlInputConfig(
     ignoreUnknownNames = true,
     allowEmptyValues = true,
     allowEscapedQuotesInLiteralStrings = true

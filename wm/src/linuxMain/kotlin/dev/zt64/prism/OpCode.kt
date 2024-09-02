@@ -1,3 +1,5 @@
+package dev.zt64.prism
+
 enum class OpCode {
     CREATE_WINDOW,
     CHANGE_WINDOW_ATTRIBUTES,

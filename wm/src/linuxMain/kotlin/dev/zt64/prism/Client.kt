@@ -1,3 +1,5 @@
+package dev.zt64.prism
+
 import xlib.Window
 
 internal class Client(

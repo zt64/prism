@@ -1,3 +1,5 @@
+package dev.zt64.prism
+
 enum class Atom {
     IPC_CLOSE_CLIENT,
     IPC_ICONIFY_CLIENT,

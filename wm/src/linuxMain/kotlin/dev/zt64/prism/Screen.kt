@@ -1,4 +1,4 @@
-// 4     WINDOW                          root
+package dev.zt64.prism// 4     WINDOW                          root
 // 4     COLORMAP                        default-colormap
 // 4     CARD32                          white-pixel
 // 4     CARD32                          black-pixel

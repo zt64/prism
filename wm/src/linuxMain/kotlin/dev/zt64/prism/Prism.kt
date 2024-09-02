@@ -1,6 +1,8 @@
+package dev.zt64.prism
+
+import dev.zt64.prism.util.*
 import kotlinx.cinterop.*
 import platform.posix.free
-import util.*
 import xlib.*
 import kotlin.system.exitProcess
 

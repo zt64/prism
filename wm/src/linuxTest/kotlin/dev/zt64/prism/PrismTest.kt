@@ -1,6 +1,5 @@
 package dev.zt64.prism
 
-import Prism
 import kotlin.test.Test
 
 class PrismTest {

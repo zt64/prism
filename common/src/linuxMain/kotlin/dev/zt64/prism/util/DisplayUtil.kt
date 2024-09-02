@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package util
+package dev.zt64.prism.util
 
 import kotlinx.cinterop.*
 import xlib.*

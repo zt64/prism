@@ -1,3 +1,5 @@
+package dev.zt64.prism
+
 import io.ktor.utils.io.core.*
 
 sealed interface Event {

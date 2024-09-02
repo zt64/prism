@@ -1,3 +1,5 @@
+package dev.zt64.prism
+
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

@@ -1,8 +1,8 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package util
+package dev.zt64.prism.util
 
-import Atom
+import dev.zt64.prism.Atom
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
