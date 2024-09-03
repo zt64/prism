@@ -336,6 +336,5 @@ internal class Prism(
 
     override fun close() {
         dpy.close()
-        nativeHeap.free(dpy)
     }
 }

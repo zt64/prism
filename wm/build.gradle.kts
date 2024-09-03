@@ -1,4 +1,4 @@
-import java.util.concurrent.CompletableFuture
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import kotlin.concurrent.thread
 
 plugins {
@@ -22,6 +22,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlin.coroutines.test)
             }
         }
 
@@ -43,37 +44,24 @@ abstract class XvfbServer : BuildService<XvfbServer.Parameters>, AutoCloseable {
         val arguments: ListProperty<String>
     }
 
+    val display: String = ":99"
+
     private val xvfbProcess = ProcessBuilder()
-        .command(parameters.executable.get(), "-displayfd", "1", *parameters.arguments.get().toTypedArray())
+        .command(parameters.executable.get(), *parameters.arguments.get().toTypedArray(), display)
         .redirectInput(ProcessBuilder.Redirect.from(File("/dev/null")))
         .start()
-
-    private val _display = CompletableFuture<String>()
 
     init {
         val logger = Logging.getLogger(XvfbServer::class.java)
         logger.info("Xvfb: PID=${xvfbProcess.pid()}")
-        thread {
-            xvfbProcess.inputStream.reader().useLines { lines ->
-                lines.fold(true) { isFirst, line ->
-                    if (isFirst) {
-                        logger.info("Xvfb: DISPLAY=:$line")
-                        _display.complete(":$line")
-                    } else {
-                        logger.info("Xvfb: out=$line")
-                    }
-                    false
-                } && _display.completeExceptionally(IllegalStateException("No display"))
-            }
-        }
+
         thread {
             xvfbProcess.errorStream.reader().useLines { lines ->
-                for (line in lines) logger.info("Xvfb: err=$line")
+                for (line in lines) logger.error("Xvfb: err=$line")
             }
         }
     }
 
-    val display: String get() = _display.get()
 
     override fun close() {
         xvfbProcess.destroy()
@@ -85,8 +73,7 @@ val xvfbServer = gradle.sharedServices.registerIfAbsent("xvfb", XvfbServer::clas
     parameters.arguments.empty()
 }
 
-tasks.withType<Test>().configureEach {
+tasks.withType<KotlinNativeTest>().configureEach {
     usesService(xvfbServer)
     doFirst { environment("DISPLAY", xvfbServer.get().display) }
-    useJUnitPlatform()
 }
