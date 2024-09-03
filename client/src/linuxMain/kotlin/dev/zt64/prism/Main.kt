@@ -16,9 +16,7 @@ import xlib.*
 fun main(args: Array<String>) {
     val dpy = XOpenDisplay(null) ?: error("Cannot open display")
 
-    class Mul : CliktCommand("Multiply a number by two") {
-        private val number by argument("The number to multiply by two").int()
-
+    class RunPrism : CliktCommand() {
         override fun run() {
             memScoped {
                 val dummyWindow = dpy.createWindow(
@@ -41,7 +39,7 @@ fun main(args: Array<String>) {
                         xclient.apply {
                             type = ClientMessage
                             window = dummyWindow
-                            data.longs = listOf(Atom.IPC_LIST_CLIENTS_REQUEST.ordinal.toLong(), number.toLong())
+                            data.longs = listOf(Atom.IPC_LIST_CLIENTS_REQUEST.ordinal.toLong())
                             serial = 0u
                             format = 32
                             send_event = True
@@ -87,7 +85,7 @@ fun main(args: Array<String>) {
     }
 
     NoOpCliktCommand().subcommands(
-        Mul(),
+        RunPrism(),
         CloseClient(),
         Exit()
     ).main(args)
