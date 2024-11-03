@@ -1,10 +1,7 @@
 package dev.zt64.prism
 
 import kotlinx.cinterop.toKString
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import platform.posix.getenv
 import kotlin.test.Test

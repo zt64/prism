@@ -42,10 +42,7 @@ data class Screen(
 
 typealias Colormap = Int
 
-data class Depth(
-    val depth: Int,
-    val visuals: List<Visual>
-)
+data class Depth(val depth: Int, val visuals: List<Visual>)
 
 data class Visual(
     val visualId: VisualId,

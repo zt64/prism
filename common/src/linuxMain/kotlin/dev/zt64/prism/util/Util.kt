@@ -3,10 +3,7 @@
 package dev.zt64.prism.util
 
 import dev.zt64.prism.Atom
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.*
 import xlib.*
 
 const val CURRENT_TIME = 0UL

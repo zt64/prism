@@ -7,10 +7,7 @@ import xlib.*
 import kotlin.system.exitProcess
 
 @OptIn(ExperimentalForeignApi::class)
-internal class Prism(
-    private val config: Config,
-    private val dpy: DisplayPtr
-) : AutoCloseable {
+internal class Prism(private val config: Config, private val dpy: DisplayPtr) : AutoCloseable {
     private val clients = ArrayList<Client>()
     private var motionInfo: MotionInfo? = null
     private val root = dpy.rootWindow
@@ -166,7 +163,6 @@ internal class Prism(
                         )
                     }
                 }
-
                 UnmapNotify -> event.xunmap.run {
                     val client = clients.find { it.content == window } ?: return@run
 
@@ -174,7 +170,6 @@ internal class Prism(
 
                     clients -= client
                 }
-
                 DestroyNotify -> event.xdestroywindow.run {
                     val client = clients.find { it.content == window } ?: return@run
 
@@ -182,7 +177,6 @@ internal class Prism(
 
                     clients -= client
                 }
-
                 ConfigureRequest -> event.xconfigurerequest.let { ev ->
                     if (ev.window == dpy.rootWindow) return@let // ignore root window config requests
 
@@ -204,11 +198,9 @@ internal class Prism(
                         )
                     }
                 }
-
                 KeyPress -> event.xkey.run {
                     if (subwindow != NONE) dpy.raiseWindow(subwindow)
                 }
-
                 ButtonPress -> event.xbutton.run {
                     dpy.raiseWindow(subwindow)
 
@@ -234,7 +226,6 @@ internal class Prism(
                         }
                     )
                 }
-
                 MotionNotify -> if (motionInfo != null) {
                     event.xmotion.run {
                         val client = clients.find { it.container == window || it.header == window } ?: return@run
@@ -255,7 +246,6 @@ internal class Prism(
                                     y = attrs.y + deltaY
                                 )
                             }
-
                             3u -> {
                                 dpy.resizeWindow(
                                     window = client.container,
@@ -278,13 +268,11 @@ internal class Prism(
                         }
                     }
                 }
-
                 ButtonRelease -> if (motionInfo != null) {
                     free(motionInfo!!.start.ptr)
                     dpy.ungrabPointer()
                     motionInfo = null
                 }
-
                 ClientMessage -> event.xclient.run {
                     when (Atom.from(data.longs[0].toInt())) {
                         Atom.IPC_CLOSE_CLIENT -> {
@@ -306,12 +294,10 @@ internal class Prism(
 
                             println("Closed client")
                         }
-
                         Atom.IPC_EXIT -> {
                             dpy.close()
                             exitProcess(0)
                         }
-
                         Atom.IPC_LIST_CLIENTS_REQUEST -> memScoped {
                             dpy.sendClientMessage(
                                 type = Atom.IPC_LIST_CLIENTS_RESPONSE,
@@ -323,7 +309,6 @@ internal class Prism(
 
                             dpy.flush()
                         }
-
                         Atom.IPC_ICONIFY_CLIENT -> {}
                         Atom.IPC_MAXIMIZE_CLIENT -> {}
                         Atom.IPC_TOGGLE_CLIENT_FULLSCREEN -> {}

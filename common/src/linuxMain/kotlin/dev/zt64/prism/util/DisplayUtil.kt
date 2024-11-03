@@ -188,13 +188,12 @@ fun DisplayPtr.getWindowProperty(
     prop
 )
 
-fun DisplayPtr.setInputFocus(focus: Window, revertTo: Int, time: Time = CURRENT_TIME) =
+fun DisplayPtr.setInputFocus(focus: Window, revertTo: Int, time: Time = CURRENT_TIME): Int =
     XSetInputFocus(this, focus, revertTo, time)
 
-fun DisplayPtr.getWindowAttributes(window: Window) =
-    nativeHeap.alloc<XWindowAttributes> {
-        getWindowAttributes(window, ptr)
-    }
+fun DisplayPtr.getWindowAttributes(window: Window): XWindowAttributes = nativeHeap.alloc<XWindowAttributes> {
+    getWindowAttributes(window, ptr)
+}
 
 fun DisplayPtr.getWindowAttributes(window: Window, windowsAttributeReturn: CValuesRef<XWindowAttributes>?) =
     XGetWindowAttributes(this, window, windowsAttributeReturn)

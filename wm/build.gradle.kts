@@ -38,7 +38,9 @@ kotlin {
     }
 }
 
-abstract class XvfbServer : BuildService<XvfbServer.Parameters>, AutoCloseable {
+abstract class XvfbServer :
+    BuildService<XvfbServer.Parameters>,
+    AutoCloseable {
     interface Parameters : BuildServiceParameters {
         val executable: Property<String>
         val arguments: ListProperty<String>
@@ -61,7 +63,6 @@ abstract class XvfbServer : BuildService<XvfbServer.Parameters>, AutoCloseable {
             }
         }
     }
-
 
     override fun close() {
         xvfbProcess.destroy()

@@ -10,15 +10,9 @@ import platform.posix.access
 import platform.posix.getenv
 
 @Serializable
-data class Config(
-    val general: General = General(),
-    val header: Header = Header(),
-    val border: Border = Border()
-) {
+data class Config(val general: General = General(), val header: Header = Header(), val border: Border = Border()) {
     @Serializable
-    data class General(
-        val autoStartPath: String = "~/.config/prism/autostart"
-    )
+    data class General(val autoStartPath: String = "~/.config/prism/autostart")
 
     @Serializable
     data class Header(
