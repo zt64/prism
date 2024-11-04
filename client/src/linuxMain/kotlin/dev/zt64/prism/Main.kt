@@ -1,15 +1,10 @@
 package dev.zt64.prism
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.NoOpCliktCommand
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.int
 import dev.zt64.prism.util.*
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.get
-import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.*
 import xlib.*
 
 @OptIn(ExperimentalForeignApi::class)
@@ -57,8 +52,7 @@ fun main(args: Array<String>) {
                     val event = alloc<XEvent>()
 
                     while (dpy.nextEvent(event) == Success) {
-                        if (
-                            event.type == ClientMessage &&
+                        if (event.type == ClientMessage &&
                             event.xclient.data.l[0] == Atom.IPC_LIST_CLIENTS_RESPONSE.ordinal.toLong()
                         ) {
                             println(event.xclient.data.l[1])
@@ -86,9 +80,10 @@ fun main(args: Array<String>) {
         }
     }
 
-    NoOpCliktCommand().subcommands(
-        Mul(),
-        CloseClient(),
-        Exit()
-    ).main(args)
+    NoOpCliktCommand()
+        .subcommands(
+            Mul(),
+            CloseClient(),
+            Exit()
+        ).main(args)
 }
