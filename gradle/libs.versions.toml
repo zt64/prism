@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.1.0"
-ktor = "3.0.1"
+ktor = "3.0.2"
 ktoml = "0.5.2"
 coroutines = "1.9.0"
 clikt = "5.0.1"
